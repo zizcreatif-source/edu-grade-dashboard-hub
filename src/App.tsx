@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Cours from "./pages/Cours";
 import Etudiants from "./pages/Etudiants";
 import Notes from "./pages/Notes";
+import Parametres from "./pages/Parametres";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -53,6 +54,13 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <Notes />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/parametres" element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <Parametres />
                     </AppLayout>
                   </ProtectedRoute>
                 } />
