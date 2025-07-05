@@ -11,6 +11,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Cours from "./pages/Cours";
 import Etudiants from "./pages/Etudiants";
+import Notes from "./pages/Notes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,13 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <Etudiants />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/notes" element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <Notes />
                     </AppLayout>
                   </ProtectedRoute>
                 } />
