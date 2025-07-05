@@ -39,13 +39,16 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
 
   // Parse Excel file using XLSX library
   const parseExcelFile = useCallback((file: File) => {
+    console.log('Parsing file:', file.name, 'Type:', file.type, 'Size:', file.size);
     setFileName(file.name);
     
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
+        console.log('File read successfully, processing...');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
+        console.log('Workbook sheets:', workbook.SheetNames);
         
         // Get first worksheet
         const worksheetName = workbook.SheetNames[0];
@@ -53,8 +56,10 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
         
         // Convert to JSON
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][];
+        console.log('Raw data from Excel:', jsonData);
         
         if (jsonData.length < 2) {
+          console.log('File is empty or has no data rows');
           toast({
             title: "Fichier vide",
             description: "Le fichier Excel ne contient pas de données.",
@@ -65,6 +70,8 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
         
         const headers = jsonData[0].map(h => h?.toString().toLowerCase().trim());
         const rows = jsonData.slice(1);
+        console.log('Headers found:', headers);
+        console.log('Number of data rows:', rows.length);
         
         // Map columns
         const nomIndex = headers.findIndex(h => h.includes('nom'));
@@ -73,7 +80,10 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
         const classeIndex = headers.findIndex(h => h.includes('classe'));
         const emailIndex = headers.findIndex(h => h.includes('email') || h.includes('mail'));
         
+        console.log('Column mapping:', { nomIndex, prenomIndex, numeroIndex, classeIndex, emailIndex });
+        
         if (nomIndex === -1 || prenomIndex === -1 || numeroIndex === -1) {
+          console.log('Required columns missing');
           toast({
             title: "Colonnes manquantes",
             description: "Le fichier doit contenir au minimum les colonnes: Nom, Prénom, Numéro",
@@ -120,6 +130,7 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
             };
           });
         
+        console.log('Parsed students data:', studentsData);
         setParsedData(studentsData);
         
       } catch (error) {
@@ -130,6 +141,15 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
           variant: "destructive",
         });
       }
+    };
+    
+    reader.onerror = (error) => {
+      console.error('FileReader error:', error);
+      toast({
+        title: "Erreur de lecture",
+        description: "Impossible de lire le fichier.",
+        variant: "destructive",
+      });
     };
     
     reader.readAsArrayBuffer(file);
