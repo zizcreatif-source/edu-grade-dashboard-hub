@@ -13,14 +13,14 @@ export function ExportManager() {
   const { toast } = useToast();
   
   const [selectedCours, setSelectedCours] = useState('');
-  const [exportType, setExportType] = useState<'notes' | 'bulletins' | 'stats'>('notes');
+  const [exportType, setExportType] = useState<'notes' | 'stats' | 'presence'>('notes');
   const [selectedColumns, setSelectedColumns] = useState<string[]>(['nom', 'prenom', 'notes']);
   const [includeLogo, setIncludeLogo] = useState(true);
 
   const exportTypes = [
     { value: 'notes', label: 'Notes par évaluation', icon: FileSpreadsheet },
-    { value: 'bulletins', label: 'Bulletins individuels', icon: FileText },
-    { value: 'stats', label: 'Statistiques de classe', icon: BarChart3 },
+    { value: 'stats', label: 'Statistiques de promotion', icon: BarChart3 },
+    { value: 'presence', label: 'Feuilles de présence', icon: FileText },
   ];
 
   const availableColumns = [
@@ -31,6 +31,7 @@ export function ExportManager() {
     { id: 'moyennes', label: 'Moyennes' },
     { id: 'commentaires', label: 'Commentaires' },
     { id: 'absences', label: 'Absences' },
+    { id: 'signature', label: 'Signature' },
   ];
 
   const handleExport = () => {
@@ -75,11 +76,28 @@ export function ExportManager() {
               const totalCoeff = studentNotes.reduce((sum, n) => sum + n.coefficient, 0);
               return totalCoeff > 0 ? (weighted / totalCoeff).toFixed(1) : '0';
             }
+            case 'signature': return ''; // Colonne vide pour signature manuelle
             default: return '';
           }
         }).join(',');
         csvContent += row + '\n';
       });
+    } else if (exportType === 'presence') {
+      // Export feuille de présence
+      csvContent = `Feuille de présence - ${course?.nom}\n`;
+      csvContent += `Date: _______________\n\n`;
+      csvContent += 'Nom,Prénom,Numéro étudiant,Signature\n';
+      
+      const courseStudents = etudiants.filter(e => e.classe === course?.classe);
+      courseStudents.forEach(student => {
+        csvContent += `${student.nom},${student.prenom},${student.numero},\n`;
+      });
+    } else if (exportType === 'stats') {
+      // Export statistiques
+      csvContent = `Statistiques - ${course?.nom}\n`;
+      csvContent += `Nombre d'étudiants: ${etudiants.filter(e => e.classe === course?.classe).length}\n`;
+      csvContent += `Nombre d'évaluations: ${evaluations.filter(e => e.coursId === selectedCours).length}\n`;
+      csvContent += `Nombre de notes: ${courseNotes.length}\n`;
     }
 
     // Create and download file
@@ -118,7 +136,7 @@ export function ExportManager() {
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium mb-2 block">Cours à exporter</label>
+              <label className="text-sm font-medium mb-2 block">Cours/Module</label>
               <Select value={selectedCours} onValueChange={setSelectedCours}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un cours" />
@@ -162,6 +180,7 @@ export function ExportManager() {
                     id={column.id}
                     checked={selectedColumns.includes(column.id)}
                     onCheckedChange={() => toggleColumn(column.id)}
+                    disabled={exportType === 'presence' && !['nom', 'prenom', 'numero', 'signature'].includes(column.id)}
                   />
                   <label htmlFor={column.id} className="text-sm">
                     {column.label}
@@ -178,7 +197,7 @@ export function ExportManager() {
               onCheckedChange={(checked) => setIncludeLogo(checked as boolean)}
             />
             <label htmlFor="logo" className="text-sm">
-              Inclure le logo de l'établissement
+              Inclure le logo de l'université/institut
             </label>
           </div>
 

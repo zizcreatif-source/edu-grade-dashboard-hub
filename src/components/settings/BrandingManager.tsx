@@ -71,20 +71,20 @@ export function BrandingManager() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium">Gestion des Établissements</h3>
-          <p className="text-sm text-muted-foreground">Configurez vos établissements et leur branding</p>
+          <h3 className="text-lg font-medium">Gestion des Universités/Instituts</h3>
+          <p className="text-sm text-muted-foreground">Configurez vos universités/instituts et leur branding</p>
         </div>
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogTrigger asChild>
             <Button onClick={() => { setEditingId(null); form.reset(); }}>
               <Plus className="h-4 w-4 mr-2" />
-              Nouvel établissement
+              Nouvelle université/institut
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingId ? 'Modifier l\'établissement' : 'Nouvel établissement'}
+                {editingId ? 'Modifier l\'université/institut' : 'Nouvelle université/institut'}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -94,9 +94,9 @@ export function BrandingManager() {
                   name="nom"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom de l'établissement</FormLabel>
+                      <FormLabel>Nom de l'université/institut</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Ex: Lycée Jean Moulin" />
+                        <Input {...field} placeholder="Ex: Université Paris-Sorbonne" />
                       </FormControl>
                     </FormItem>
                   )}
