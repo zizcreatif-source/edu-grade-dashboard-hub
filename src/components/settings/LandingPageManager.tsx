@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Eye, Save, Upload, X, Plus, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LandingPageData {
   personalInfo: {
@@ -25,74 +27,120 @@ interface LandingPageData {
     telephone: string;
     adresse: string;
   };
-  services: Array<{
-    titre: string;
-    description: string;
-  }>;
-  temoignages: Array<{
-    nom: string;
-    classe: string;
-    commentaire: string;
-    note: number;
-  }>;
 }
 
 export function LandingPageManager() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [newSpecialite, setNewSpecialite] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [landingPageId, setLandingPageId] = useState<string | null>(null);
 
   const [landingData, setLandingData] = useState<LandingPageData>({
     personalInfo: {
-      name: "Professeur Martin Dubois",
-      title: "Professeur de Mathématiques et Physique",
+      name: "Professeur",
+      title: "Enseignant",
       photo: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=300&fit=crop&crop=faces",
-      presentation: "Passionné par l'enseignement des sciences, j'accompagne mes élèves vers la réussite avec une pédagogie adaptée et bienveillante.",
-      experience: "15 ans d'expérience",
-      etablissement: "Lycée Jean Moulin - Paris"
+      presentation: "Passionné par l'enseignement, j'accompagne mes élèves vers la réussite.",
+      experience: "Plusieurs années d'expérience",
+      etablissement: "Établissement scolaire"
     },
-    specialites: [
-      "Mathématiques Terminale S",
-      "Physique-Chimie",
-      "Préparation BAC",
-      "Soutien Scolaire"
-    ],
+    specialites: ["Mathématiques", "Sciences"],
     contact: {
-      email: "martin.dubois@lycee.fr",
+      email: "contact@professeur.fr",
       telephone: "01 23 45 67 89",
-      adresse: "12 Rue de l'Éducation, 75001 Paris"
-    },
-    services: [
-      {
-        titre: "Cours Particuliers",
-        description: "Accompagnement personnalisé pour tous niveaux"
-      },
-      {
-        titre: "Préparation BAC",
-        description: "Méthodologie et entraînement intensif"
-      },
-      {
-        titre: "Soutien Scolaire",
-        description: "Aide aux devoirs et remise à niveau"
-      }
-    ],
-    temoignages: [
-      {
-        nom: "Sophie L.",
-        classe: "Terminale S",
-        commentaire: "Grâce aux cours de M. Dubois, j'ai eu 18/20 au BAC de maths !",
-        note: 5
-      }
-    ]
+      adresse: "France"
+    }
   });
 
-  const handleSave = () => {
-    // Ici on sauvegarderait dans Supabase
-    toast({
-      title: "Page d'accueil mise à jour",
-      description: "Vos modifications ont été sauvegardées avec succès."
-    });
-    setIsEditing(false);
+  // Charger les données existantes
+  useEffect(() => {
+    const fetchLandingData = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('landing_pages')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching landing page:', error);
+          return;
+        }
+
+        if (data) {
+          setLandingPageId(data.id);
+          const personalInfo = data.personal_info as unknown as LandingPageData['personalInfo'];
+          const contact = data.contact as unknown as LandingPageData['contact'];
+          
+          setLandingData({
+            personalInfo,
+            specialites: data.specialites || [],
+            contact
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching landing page:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLandingData();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      
+      const dataToSave = {
+        user_id: user.id,
+        personal_info: landingData.personalInfo,
+        specialites: landingData.specialites,
+        contact: landingData.contact,
+        is_active: true
+      };
+
+      if (landingPageId) {
+        // Mise à jour
+        const { error } = await supabase
+          .from('landing_pages')
+          .update(dataToSave)
+          .eq('id', landingPageId);
+
+        if (error) throw error;
+      } else {
+        // Création
+        const { data, error } = await supabase
+          .from('landing_pages')
+          .insert(dataToSave)
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        setLandingPageId(data.id);
+      }
+
+      toast({
+        title: "Page d'accueil mise à jour",
+        description: "Vos modifications ont été sauvegardées avec succès."
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving landing page:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les modifications.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addSpecialite = () => {
@@ -168,11 +216,10 @@ export function LandingPageManager() {
       </div>
 
       <Tabs defaultValue="personal" className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-3 w-full max-w-2xl">
           <TabsTrigger value="personal">Profil</TabsTrigger>
           <TabsTrigger value="specialites">Spécialités</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
-          <TabsTrigger value="services">Services</TabsTrigger>
         </TabsList>
 
         <TabsContent value="personal" className="space-y-6">
@@ -349,48 +396,6 @@ export function LandingPageManager() {
                   disabled={!isEditing}
                   rows={2}
                 />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="services" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Services proposés</CardTitle>
-              <CardDescription>
-                Détaillez les services que vous proposez à vos élèves
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {landingData.services.map((service, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="space-y-2">
-                      <Input
-                        value={service.titre}
-                        onChange={(e) => {
-                          const newServices = [...landingData.services];
-                          newServices[index].titre = e.target.value;
-                          setLandingData(prev => ({ ...prev, services: newServices }));
-                        }}
-                        disabled={!isEditing}
-                        placeholder="Titre du service"
-                      />
-                      <Textarea
-                        value={service.description}
-                        onChange={(e) => {
-                          const newServices = [...landingData.services];
-                          newServices[index].description = e.target.value;
-                          setLandingData(prev => ({ ...prev, services: newServices }));
-                        }}
-                        disabled={!isEditing}
-                        placeholder="Description du service"
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>

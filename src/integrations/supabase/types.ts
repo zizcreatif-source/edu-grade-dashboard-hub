@@ -240,6 +240,39 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_pages: {
+        Row: {
+          contact: Json
+          created_at: string
+          id: string
+          is_active: boolean | null
+          personal_info: Json
+          specialites: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          personal_info?: Json
+          specialites?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          personal_info?: Json
+          specialites?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           commentaire: string | null
