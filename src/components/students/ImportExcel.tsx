@@ -6,8 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 
 interface ImportExcelProps {
   onClose: () => void;
@@ -30,91 +33,107 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
   const [dragActive, setDragActive] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedStudent[]>([]);
   const [selectedEtablissement, setSelectedEtablissement] = useState<string>('');
+  const [selectedClasse, setSelectedClasse] = useState<string>('');
   const [isImporting, setIsImporting] = useState(false);
   const [fileName, setFileName] = useState<string>('');
 
-  // Simulate Excel file parsing
+  // Parse Excel file using XLSX library
   const parseExcelFile = useCallback((file: File) => {
     setFileName(file.name);
     
-    // Simulate parsing with mock data
-    const mockData: ParsedStudent[] = [
-      {
-        nom: 'Dupont',
-        prenom: 'Jean',
-        numero: '2024003',
-        classe: 'Terminale S',
-        email: 'jean.dupont@lycee.fr',
-        valid: true,
-        errors: []
-      },
-      {
-        nom: 'Martin',
-        prenom: 'Sophie',
-        numero: '2024004',
-        classe: 'Terminale ES',
-        email: 'sophie.martin@lycee.fr',
-        valid: true,
-        errors: []
-      },
-      {
-        nom: 'Bernard',
-        prenom: 'Pierre',
-        numero: '2024001', // Already exists
-        classe: 'Première L',
-        email: '',
-        valid: false,
-        errors: ['Numéro étudiant déjà existant']
-      },
-      {
-        nom: '',
-        prenom: 'Marie',
-        numero: '2024005',
-        classe: 'Terminale S',
-        email: 'marie@lycee.fr',
-        valid: false,
-        errors: ['Nom manquant']
-      },
-      {
-        nom: 'Lemoine',
-        prenom: 'Paul',
-        numero: '2024006',
-        classe: 'Seconde A',
-        email: 'paul.lemoine@invalid-email',
-        valid: false,
-        errors: ['Email invalide']
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Get first worksheet
+        const worksheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[worksheetName];
+        
+        // Convert to JSON
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][];
+        
+        if (jsonData.length < 2) {
+          toast({
+            title: "Fichier vide",
+            description: "Le fichier Excel ne contient pas de données.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        const headers = jsonData[0].map(h => h?.toString().toLowerCase().trim());
+        const rows = jsonData.slice(1);
+        
+        // Map columns
+        const nomIndex = headers.findIndex(h => h.includes('nom'));
+        const prenomIndex = headers.findIndex(h => h.includes('prénom') || h.includes('prenom'));
+        const numeroIndex = headers.findIndex(h => h.includes('numéro') || h.includes('numero') || h.includes('matricule'));
+        const classeIndex = headers.findIndex(h => h.includes('classe'));
+        const emailIndex = headers.findIndex(h => h.includes('email') || h.includes('mail'));
+        
+        if (nomIndex === -1 || prenomIndex === -1 || numeroIndex === -1) {
+          toast({
+            title: "Colonnes manquantes",
+            description: "Le fichier doit contenir au minimum les colonnes: Nom, Prénom, Numéro",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Parse students data
+        const studentsData: ParsedStudent[] = rows
+          .filter(row => row && row.length > 0 && row.some(cell => cell !== undefined && cell !== ''))
+          .map((row, index) => {
+            const nom = row[nomIndex]?.toString().trim() || '';
+            const prenom = row[prenomIndex]?.toString().trim() || '';
+            const numero = row[numeroIndex]?.toString().trim() || '';
+            const classe = classeIndex !== -1 ? row[classeIndex]?.toString().trim() || '' : '';
+            const email = emailIndex !== -1 ? row[emailIndex]?.toString().trim() || '' : '';
+            
+            const errors: string[] = [];
+            
+            // Check required fields
+            if (!nom) errors.push('Nom manquant');
+            if (!prenom) errors.push('Prénom manquant');
+            if (!numero) errors.push('Numéro manquant');
+            
+            // Check if student number already exists
+            if (numero && etudiants.some(e => e.numero === numero)) {
+              errors.push('Numéro étudiant déjà existant');
+            }
+            
+            // Check email format if provided
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              errors.push('Email invalide');
+            }
+            
+            return {
+              nom,
+              prenom,
+              numero,
+              classe,
+              email: email || undefined,
+              valid: errors.length === 0,
+              errors
+            };
+          });
+        
+        setParsedData(studentsData);
+        
+      } catch (error) {
+        console.error('Error parsing Excel file:', error);
+        toast({
+          title: "Erreur de lecture",
+          description: "Impossible de lire le fichier Excel. Vérifiez le format.",
+          variant: "destructive",
+        });
       }
-    ];
-
-    // Validate data
-    const validatedData = mockData.map(student => {
-      const errors: string[] = [...student.errors];
-      
-      // Check if student number already exists
-      if (etudiants.some(e => e.numero === student.numero)) {
-        errors.push('Numéro étudiant déjà existant');
-      }
-      
-      // Check required fields
-      if (!student.nom.trim()) errors.push('Nom manquant');
-      if (!student.prenom.trim()) errors.push('Prénom manquant');
-      if (!student.numero.trim()) errors.push('Numéro étudiant manquant');
-      if (!student.classe.trim()) errors.push('Classe manquante');
-      
-      // Check email format if provided
-      if (student.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email)) {
-        errors.push('Email invalide');
-      }
-
-      return {
-        ...student,
-        valid: errors.length === 0,
-        errors
-      };
-    });
-
-    setParsedData(validatedData);
-  }, [etudiants]);
+    };
+    
+    reader.readAsArrayBuffer(file);
+  }, [etudiants, toast]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -166,11 +185,23 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
       const validStudents = parsedData.filter(student => student.valid);
       
       for (const student of validStudents) {
+        const classeFinale = student.classe || selectedClasse;
+        
+        if (!classeFinale) {
+          toast({
+            title: "Classe manquante",
+            description: "Veuillez spécifier une classe par défaut ou inclure la classe dans le fichier Excel",
+            variant: "destructive",
+          });
+          setIsImporting(false);
+          return;
+        }
+        
         await addEtudiant({
           nom: student.nom,
           prenom: student.prenom,
           numero: student.numero,
-          classe: student.classe,
+          classe: classeFinale,
           email: student.email || undefined,
           etablissementId: selectedEtablissement,
           anneeScolaire: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
@@ -259,6 +290,37 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2">
+                  <Label htmlFor="etablissement">Établissement *</Label>
+                  <Select value={selectedEtablissement} onValueChange={setSelectedEtablissement}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner l'établissement" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {etablissements.map((etablissement) => (
+                        <SelectItem key={etablissement.id} value={etablissement.id}>
+                          {etablissement.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="classe">Classe par défaut</Label>
+                  <Input
+                    id="classe"
+                    value={selectedClasse}
+                    onChange={(e) => setSelectedClasse(e.target.value)}
+                    placeholder="Ex: Terminale S"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Utilisée si la classe n'est pas spécifiée dans le fichier
+                  </p>
+                </div>
+              </div>
+
               <div className="flex justify-between items-center">
                 <div className="flex gap-4">
                   <Badge variant="default" className="bg-green-500">
@@ -272,19 +334,6 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
                     </Badge>
                   )}
                 </div>
-                
-                <Select value={selectedEtablissement} onValueChange={setSelectedEtablissement}>
-                  <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Sélectionner l'établissement" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {etablissements.map((etablissement) => (
-                      <SelectItem key={etablissement.id} value={etablissement.id}>
-                        {etablissement.nom}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="max-h-64 overflow-y-auto border rounded">
