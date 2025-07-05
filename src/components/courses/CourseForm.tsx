@@ -67,7 +67,11 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
     try {
       if (coursId) {
         // Update existing course
-        updateCours(coursId, data);
+        const existingCours = cours.find(c => c.id === coursId);
+        updateCours(coursId, {
+          ...data,
+          progression: existingCours?.progression || 0,
+        });
         toast({
           title: "Cours modifié",
           description: "Le cours a été modifié avec succès.",
@@ -75,7 +79,12 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
       } else {
         // Create new course
         addCours({
-          ...data,
+          nom: data.nom,
+          etablissementId: data.etablissementId,
+          classe: data.classe,
+          quantumHoraire: data.quantumHoraire,
+          couleur: data.couleur,
+          description: data.description,
           progression: 0,
         });
         toast({

@@ -74,7 +74,10 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
 
       if (studentId) {
         // Update existing student
-        updateEtudiant(studentId, data);
+        updateEtudiant(studentId, {
+          ...data,
+          email: data.email || undefined,
+        });
         toast({
           title: "Étudiant modifié",
           description: "Les informations de l'étudiant ont été modifiées avec succès.",
@@ -82,7 +85,11 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
       } else {
         // Create new student
         addEtudiant({
-          ...data,
+          nom: data.nom,
+          prenom: data.prenom,
+          numero: data.numero,
+          etablissementId: data.etablissementId,
+          classe: data.classe,
           email: data.email || undefined,
         });
         toast({
