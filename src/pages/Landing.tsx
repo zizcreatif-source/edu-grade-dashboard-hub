@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Mail, Phone, MapPin, Calendar, Award, Users, BookOpen, Star } from "lucide-react";
+import { GraduationCap, Mail, Phone, MapPin, Calendar, Award, Users, BookOpen, Star, Moon, Sun, LayoutDashboard } from "lucide-react";
 
 // Mock data - sera remplacé par les données du professeur
 const mockProfessorData = {
@@ -64,6 +65,7 @@ const mockProfessorData = {
 
 export default function Landing() {
   const { isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [data] = useState(mockProfessorData);
 
   const renderStars = (count: number) => {
@@ -77,17 +79,36 @@ export default function Landing() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          {/* Left side - Theme toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9"
+          >
+            {theme === 'light' ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Sun className="h-4 w-4" />
+            )}
+          </Button>
+
+          {/* Center - Logo */}
           <div className="flex items-center gap-3">
             <GraduationCap className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold">EduGrade</span>
           </div>
           
+          {/* Right side - Dashboard/Auth button */}
           {isAuthenticated ? (
-            <Button asChild>
-              <a href="/dashboard">Tableau de bord</a>
+            <Button asChild size="sm">
+              <a href="/dashboard">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Dashboard
+              </a>
             </Button>
           ) : (
-            <Button asChild>
+            <Button asChild size="sm">
               <a href="/auth">Connexion Professeur</a>
             </Button>
           )}
