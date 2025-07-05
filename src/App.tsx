@@ -18,6 +18,7 @@ import Etudiants from "./pages/Etudiants";
 import Notes from "./pages/Notes";
 import Parametres from "./pages/Parametres";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -33,6 +34,7 @@ function AppRouter() {
   useKeyboardShortcuts();
   return (
     <Routes>
+      <Route path="/landing" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/" element={
         <ProtectedRoute>

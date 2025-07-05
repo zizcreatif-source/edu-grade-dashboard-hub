@@ -6,7 +6,8 @@ import {
   Users, 
   ClipboardList, 
   Settings,
-  GraduationCap
+  GraduationCap,
+  Globe
 } from "lucide-react";
 
 import {
@@ -48,6 +49,12 @@ const navigationItems = [
     url: "/notes", 
     icon: ClipboardList,
     description: "Saisie et consultation"
+  },
+  { 
+    title: "Ma Page", 
+    url: "/landing", 
+    icon: Globe,
+    description: "Page d'accueil publique"
   },
   { 
     title: "Paramètres", 

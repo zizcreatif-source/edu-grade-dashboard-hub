@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Download, Palette, Building2, FileText, History, Database } from 'lucide-react';
+import { Settings, Download, Palette, Building2, FileText, History, Database, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExportManager } from '@/components/settings/ExportManager';
@@ -7,6 +7,7 @@ import { BrandingManager } from '@/components/settings/BrandingManager';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { VersionManager } from '@/components/settings/VersionManager';
 import { DataManager } from '@/components/settings/DataManager';
+import { LandingPageManager } from '@/components/settings/LandingPageManager';
 import { TemplateManager } from '@/components/settings/TemplateManager';
 
 export default function Parametres() {
@@ -17,8 +18,12 @@ export default function Parametres() {
         <p className="text-muted-foreground">Configuration et personnalisation d'EduGrade</p>
       </div>
 
-        <Tabs defaultValue="export" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <Tabs defaultValue="landing" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="landing" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Landing
+          </TabsTrigger>
           <TabsTrigger value="export" className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export
@@ -44,6 +49,10 @@ export default function Parametres() {
             Données
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="landing">
+          <LandingPageManager />
+        </TabsContent>
 
         <TabsContent value="export">
           <ExportManager />
