@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SeanceManager } from './SeanceManager';
+import { QuickGrading } from './QuickGrading';
 import { 
   Clock, 
   Users, 
@@ -58,11 +59,12 @@ export function CourseDetails({ coursId }: CourseDetailsProps) {
   };
 
   return (
-    <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="overview" className="space-y-6">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
         <TabsTrigger value="seances">Séances de cours</TabsTrigger>
         <TabsTrigger value="evaluations">Évaluations</TabsTrigger>
+        <TabsTrigger value="notes">Noter les étudiants</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" className="space-y-6">
@@ -210,22 +212,22 @@ export function CourseDetails({ coursId }: CourseDetailsProps) {
                   
                   return (
                     <div key={etudiant.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={etudiant.avatar} />
-                          <AvatarFallback>
-                            {getInitials(etudiant.nom, etudiant.prenom)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">
-                            {etudiant.prenom} {etudiant.nom}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            N° {etudiant.numero}
-                          </p>
-                        </div>
-                      </div>
+                        <div className="flex items-center gap-3">
+                         <Avatar>
+                           <AvatarImage src={etudiant.avatar} />
+                           <AvatarFallback>
+                             {getInitials(etudiant.nom, etudiant.prenom)}
+                           </AvatarFallback>
+                         </Avatar>
+                         <div>
+                           <p className="font-medium">
+                             {etudiant.prenom} {etudiant.nom}
+                           </p>
+                           <p className="text-sm text-muted-foreground">
+                             N° {etudiant.numero}
+                           </p>
+                         </div>
+                       </div>
                       <div className="text-right">
                         <p className="font-medium">
                           {moyenne > 0 ? moyenne.toFixed(1) : '-'}/20
@@ -298,6 +300,10 @@ export function CourseDetails({ coursId }: CourseDetailsProps) {
             </CardContent>
           </Card>
         )}
+      </TabsContent>
+
+      <TabsContent value="notes" className="space-y-6">
+        <QuickGrading coursId={coursId} students={coursEtudiants} />
       </TabsContent>
     </Tabs>
   );
