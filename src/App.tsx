@@ -9,6 +9,8 @@ import { DataProvider } from "./contexts/DataContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
+import Cours from "./pages/Cours";
+import Etudiants from "./pages/Etudiants";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +31,20 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <Dashboard />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/cours" element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <Cours />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/etudiants" element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <Etudiants />
                     </AppLayout>
                   </ProtectedRoute>
                 } />
