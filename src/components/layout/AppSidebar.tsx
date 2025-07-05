@@ -21,6 +21,8 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { SyncStatus } from "@/components/offline/SyncStatus";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const navigationItems = [
   { 
@@ -79,16 +81,24 @@ export function AppSidebar() {
   return (
     <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
       <SidebarHeader className="border-b border-border/40 p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow">
-            <GraduationCap className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow">
+              <GraduationCap className="h-5 w-5 text-primary-foreground" />
+            </div>
+            {!collapsed && (
+              <div>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  EduGrade
+                </h1>
+                <p className="text-xs text-muted-foreground">Gestion des notes</p>
+              </div>
+            )}
           </div>
           {!collapsed && (
-            <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-                EduGrade
-              </h1>
-              <p className="text-xs text-muted-foreground">Gestion des notes</p>
+            <div className="flex items-center gap-1">
+              <SyncStatus />
+              <NotificationCenter />
             </div>
           )}
         </div>

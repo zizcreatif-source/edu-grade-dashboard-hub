@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { DataProvider } from "./contexts/DataContext";
+import { OfflineProvider } from "./contexts/OfflineContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -23,51 +25,55 @@ const App = () => (
     <ThemeProvider>
       <AuthProvider>
         <DataProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Dashboard />
-                    </AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/cours" element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Cours />
-                    </AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/etudiants" element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Etudiants />
-                    </AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/notes" element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Notes />
-                    </AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/parametres" element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Parametres />
-                    </AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+          <OfflineProvider>
+            <NotificationProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Dashboard />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/cours" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Cours />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/etudiants" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Etudiants />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/notes" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Notes />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/parametres" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <Parametres />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </NotificationProvider>
+          </OfflineProvider>
         </DataProvider>
       </AuthProvider>
     </ThemeProvider>
