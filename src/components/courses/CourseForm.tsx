@@ -19,6 +19,8 @@ const courseSchema = z.object({
   quantumHoraire: z.number().min(1, 'Le quantum horaire doit être supérieur à 0'),
   description: z.string().optional(),
   couleur: z.string().min(7, 'Veuillez sélectionner une couleur'),
+  anneeScolaire: z.string().min(1, 'Veuillez spécifier l\'année scolaire'),
+  responsableClasse: z.string().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -42,6 +44,8 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
       quantumHoraire: 1,
       description: '',
       couleur: '#2563eb',
+      anneeScolaire: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
+      responsableClasse: '',
     },
   });
 
@@ -57,6 +61,8 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
           quantumHoraire: existingCours.quantumHoraire,
           description: existingCours.description || '',
           couleur: existingCours.couleur,
+          anneeScolaire: existingCours.anneeScolaire,
+          responsableClasse: existingCours.responsableClasse || '',
         });
       }
     }
@@ -86,6 +92,8 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
           couleur: data.couleur,
           description: data.description,
           progression: 0,
+          anneeScolaire: data.anneeScolaire,
+          responsableClasse: data.responsableClasse,
         });
         toast({
           title: "Cours créé",
@@ -166,6 +174,20 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="responsableClasse"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Responsable de classe</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: M. Dupuis" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <div className="space-y-4">
@@ -182,6 +204,20 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
                       {...field} 
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="anneeScolaire"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Année scolaire *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: 2024-2025" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

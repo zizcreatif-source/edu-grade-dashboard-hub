@@ -21,6 +21,8 @@ export interface Cours {
   couleur: string;
   description?: string;
   classe: string;
+  anneeScolaire: string;
+  responsableClasse?: string;
 }
 
 export interface Etudiant {
@@ -32,6 +34,8 @@ export interface Etudiant {
   classe: string;
   email?: string;
   avatar?: string;
+  anneeScolaire: string;
+  groupeIds?: string[];
 }
 
 export interface Note {
@@ -53,6 +57,18 @@ export interface Evaluation {
   coefficient: number;
   type: 'controle' | 'examen' | 'tp' | 'oral';
   description?: string;
+  estNoteGroupe?: boolean;
+  groupeId?: string;
+}
+
+export interface Groupe {
+  id: string;
+  nom: string;
+  description?: string;
+  etudiantIds: string[];
+  responsableId?: string;
+  classe: string;
+  anneeScolaire: string;
 }
 
 interface DataContextType {
@@ -61,6 +77,7 @@ interface DataContextType {
   etudiants: Etudiant[];
   notes: Note[];
   evaluations: Evaluation[];
+  groupes: Groupe[];
   // CRUD Operations
   addEtablissement: (etablissement: Omit<Etablissement, 'id'>) => void;
   updateEtablissement: (id: string, etablissement: Partial<Etablissement>) => void;
@@ -77,6 +94,9 @@ interface DataContextType {
   addEvaluation: (evaluation: Omit<Evaluation, 'id'>) => void;
   updateEvaluation: (id: string, evaluation: Partial<Evaluation>) => void;
   deleteEvaluation: (id: string) => void;
+  addGroupe: (groupe: Omit<Groupe, 'id'>) => void;
+  updateGroupe: (id: string, groupe: Partial<Groupe>) => void;
+  deleteGroupe: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -112,7 +132,9 @@ const mockData = {
       progression: 65,
       couleur: '#2563eb',
       classe: 'Terminale S',
-      description: 'Cours de mathématiques niveau terminale'
+      description: 'Cours de mathématiques niveau terminale',
+      anneeScolaire: '2024-2025',
+      responsableClasse: 'M. Dupuis'
     },
     {
       id: '2',
@@ -122,7 +144,9 @@ const mockData = {
       progression: 78,
       couleur: '#16a34a',
       classe: 'Terminale S',
-      description: 'Cours de physique-chimie'
+      description: 'Cours de physique-chimie',
+      anneeScolaire: '2024-2025',
+      responsableClasse: 'M. Dupuis'
     },
     {
       id: '3',
@@ -132,7 +156,9 @@ const mockData = {
       progression: 45,
       couleur: '#dc2626',
       classe: '1ère L',
-      description: 'Cours de français littérature'
+      description: 'Cours de français littérature',
+      anneeScolaire: '2024-2025',
+      responsableClasse: 'Mme. Martin'
     }
   ] as Cours[],
   etudiants: [
@@ -144,7 +170,8 @@ const mockData = {
       etablissementId: '1',
       classe: 'Terminale S',
       email: 'jean.dupont@lycee.fr',
-      avatar: 'https://ui-avatars.com/api/?name=Jean+Dupont&background=random'
+      avatar: 'https://ui-avatars.com/api/?name=Jean+Dupont&background=random',
+      anneeScolaire: '2024-2025'
     },
     {
       id: '2',
@@ -154,7 +181,8 @@ const mockData = {
       etablissementId: '1',
       classe: 'Terminale S',
       email: 'sophie.martin@lycee.fr',
-      avatar: 'https://ui-avatars.com/api/?name=Sophie+Martin&background=random'
+      avatar: 'https://ui-avatars.com/api/?name=Sophie+Martin&background=random',
+      anneeScolaire: '2024-2025'
     }
   ] as Etudiant[],
   notes: [
@@ -188,7 +216,8 @@ const mockData = {
       type: 'controle' as const,
       description: 'Contrôle sur les fonctions'
     }
-  ] as Evaluation[]
+  ] as Evaluation[],
+  groupes: [] as Groupe[]
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -197,6 +226,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [etudiants, setEtudiants] = useState<Etudiant[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [groupes, setGroupes] = useState<Groupe[]>([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -206,12 +236,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedEtudiants = localStorage.getItem('edugrade_etudiants');
       const savedNotes = localStorage.getItem('edugrade_notes');
       const savedEvaluations = localStorage.getItem('edugrade_evaluations');
+      const savedGroupes = localStorage.getItem('edugrade_groupes');
 
       setEtablissements(savedEtablissements ? JSON.parse(savedEtablissements) : mockData.etablissements);
       setCours(savedCours ? JSON.parse(savedCours) : mockData.cours);
       setEtudiants(savedEtudiants ? JSON.parse(savedEtudiants) : mockData.etudiants);
       setNotes(savedNotes ? JSON.parse(savedNotes) : mockData.notes);
       setEvaluations(savedEvaluations ? JSON.parse(savedEvaluations) : mockData.evaluations);
+      setGroupes(savedGroupes ? JSON.parse(savedGroupes) : mockData.groupes);
     };
 
     loadData();
@@ -237,6 +269,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('edugrade_evaluations', JSON.stringify(evaluations));
   }, [evaluations]);
+
+  useEffect(() => {
+    localStorage.setItem('edugrade_groupes', JSON.stringify(groupes));
+  }, [groupes]);
 
   // CRUD Operations
   const generateId = () => Date.now().toString();
@@ -274,7 +310,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newEtudiant = { 
       ...etudiant, 
       id: generateId(),
-      avatar: etudiant.avatar || `https://ui-avatars.com/api/?name=${etudiant.prenom}+${etudiant.nom}&background=random`
+      avatar: etudiant.avatar || `https://ui-avatars.com/api/?name=${etudiant.prenom}+${etudiant.nom}&background=random`,
+      anneeScolaire: etudiant.anneeScolaire || new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
     };
     setEtudiants(prev => [...prev, newEtudiant]);
   };
@@ -315,12 +352,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setEvaluations(prev => prev.filter(e => e.id !== id));
   };
 
+  // Groupes
+  const addGroupe = (groupe: Omit<Groupe, 'id'>) => {
+    const newGroupe = { ...groupe, id: generateId() };
+    setGroupes(prev => [...prev, newGroupe]);
+  };
+
+  const updateGroupe = (id: string, groupe: Partial<Groupe>) => {
+    setGroupes(prev => prev.map(g => g.id === id ? { ...g, ...groupe } : g));
+  };
+
+  const deleteGroupe = (id: string) => {
+    setGroupes(prev => prev.filter(g => g.id !== id));
+  };
+
   const value = {
     etablissements,
     cours,
     etudiants,
     notes,
     evaluations,
+    groupes,
     addEtablissement,
     updateEtablissement,
     deleteEtablissement,
@@ -335,7 +387,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     deleteNote,
     addEvaluation,
     updateEvaluation,
-    deleteEvaluation
+    deleteEvaluation,
+    addGroupe,
+    updateGroupe,
+    deleteGroupe
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

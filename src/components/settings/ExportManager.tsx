@@ -1,23 +1,26 @@
 import { useState } from 'react';
-import { Download, FileSpreadsheet, FileText, BarChart3, History, Settings } from 'lucide-react';
+import { Download, FileSpreadsheet, FileText, BarChart3, History, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 
 export function ExportManager() {
-  const { cours, etudiants, notes, evaluations, etablissements } = useData();
+  const { cours, etudiants, notes, evaluations, etablissements, groupes } = useData();
   const { toast } = useToast();
   
+  const [selectedEtablissement, setSelectedEtablissement] = useState('');
   const [selectedCours, setSelectedCours] = useState('');
-  const [exportType, setExportType] = useState<'notes' | 'stats' | 'presence'>('notes');
+  const [selectedAnneeScolaire, setSelectedAnneeScolaire] = useState('');
+  const [exportType, setExportType] = useState<'ecole' | 'notes' | 'stats' | 'presence'>('ecole');
   const [selectedColumns, setSelectedColumns] = useState<string[]>(['nom', 'prenom', 'notes']);
   const [includeLogo, setIncludeLogo] = useState(true);
 
   const exportTypes = [
+    { value: 'ecole', label: 'Export par école/université', icon: Building2 },
     { value: 'notes', label: 'Notes par évaluation', icon: FileSpreadsheet },
     { value: 'stats', label: 'Statistiques de promotion', icon: BarChart3 },
     { value: 'presence', label: 'Feuilles de présence', icon: FileText },
@@ -29,83 +32,101 @@ export function ExportManager() {
     { id: 'numero', label: 'Numéro étudiant' },
     { id: 'notes', label: 'Notes' },
     { id: 'moyennes', label: 'Moyennes' },
-    { id: 'commentaires', label: 'Commentaires' },
-    { id: 'absences', label: 'Absences' },
+    { id: 'responsable', label: 'Responsable de classe' },
+    { id: 'groupes', label: 'Groupes d\'appartenance' },
     { id: 'signature', label: 'Signature' },
   ];
 
+  // Get unique school years
+  const anneesScoolaires = [...new Set([
+    ...cours.map(c => c.anneeScolaire),
+    ...etudiants.map(e => e.anneeScolaire)
+  ])].filter(Boolean).sort().reverse();
+
   const handleExport = () => {
-    if (!selectedCours) {
+    if (exportType === 'ecole' && !selectedEtablissement) {
       toast({
         title: "Sélection requise",
-        description: "Veuillez sélectionner un cours à exporter.",
+        description: "Veuillez sélectionner un établissement à exporter.",
         variant: "destructive",
       });
       return;
     }
 
-    // Simulate export
-    const course = cours.find(c => c.id === selectedCours);
-    const courseNotes = notes.filter(n => n.coursId === selectedCours);
-    
+    const etablissement = etablissements.find(e => e.id === selectedEtablissement);
     let csvContent = '';
     
-    if (exportType === 'notes') {
-      // Export notes
+    // Header with logo reference
+    if (includeLogo && etablissement?.logo) {
+      csvContent += `LOGO: ${etablissement.logo}\n`;
+    }
+    csvContent += `EXPORT COMPLET - ${etablissement?.nom || 'École'}\n`;
+    csvContent += `Année scolaire: ${selectedAnneeScolaire || 'Toutes'}\n`;
+    csvContent += `Date d'export: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+
+    // Export by classes with class managers
+    const schoolStudents = etudiants.filter(e => {
+      if (e.etablissementId !== selectedEtablissement) return false;
+      if (selectedAnneeScolaire && e.anneeScolaire !== selectedAnneeScolaire) return false;
+      return true;
+    });
+
+    const classeGroups = schoolStudents.reduce((acc, student) => {
+      if (!acc[student.classe]) acc[student.classe] = [];
+      acc[student.classe].push(student);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    Object.entries(classeGroups).forEach(([classe, students]) => {
+      const classCourse = cours.find(c => c.classe === classe && c.etablissementId === selectedEtablissement);
+      
+      csvContent += `\n=== CLASSE: ${classe} ===\n`;
+      if (classCourse?.responsableClasse) {
+        csvContent += `Responsable: ${classCourse.responsableClasse}\n`;
+      }
+      csvContent += `Nombre d'étudiants: ${students.length}\n\n`;
+
       const headers = selectedColumns.map(col => 
         availableColumns.find(ac => ac.id === col)?.label || col
       ).join(',');
-      
-      csvContent = headers + '\n';
-      
-      const courseStudents = etudiants.filter(e => e.classe === course?.classe);
-      courseStudents.forEach(student => {
+      csvContent += headers + '\n';
+
+      students.forEach(student => {
         const row = selectedColumns.map(col => {
           switch (col) {
             case 'nom': return student.nom;
             case 'prenom': return student.prenom;
             case 'numero': return student.numero;
             case 'notes': {
-              const studentNotes = courseNotes.filter(n => n.etudiantId === student.id);
+              const studentNotes = notes.filter(n => n.etudiantId === student.id);
               return studentNotes.map(n => `${n.evaluation}: ${n.note}`).join('; ');
             }
             case 'moyennes': {
-              const studentNotes = courseNotes.filter(n => n.etudiantId === student.id);
+              const studentNotes = notes.filter(n => n.etudiantId === student.id);
               if (studentNotes.length === 0) return '0';
               const weighted = studentNotes.reduce((sum, n) => sum + (n.note * n.coefficient), 0);
               const totalCoeff = studentNotes.reduce((sum, n) => sum + n.coefficient, 0);
               return totalCoeff > 0 ? (weighted / totalCoeff).toFixed(1) : '0';
             }
-            case 'signature': return ''; // Colonne vide pour signature manuelle
+            case 'responsable': return classCourse?.responsableClasse || '';
+            case 'groupes': {
+              const studentGroups = groupes.filter(g => g.etudiantIds.includes(student.id));
+              return studentGroups.map(g => g.nom).join('; ');
+            }
+            case 'signature': return '';
             default: return '';
           }
         }).join(',');
         csvContent += row + '\n';
       });
-    } else if (exportType === 'presence') {
-      // Export feuille de présence
-      csvContent = `Feuille de présence - ${course?.nom}\n`;
-      csvContent += `Date: _______________\n\n`;
-      csvContent += 'Nom,Prénom,Numéro étudiant,Signature\n';
-      
-      const courseStudents = etudiants.filter(e => e.classe === course?.classe);
-      courseStudents.forEach(student => {
-        csvContent += `${student.nom},${student.prenom},${student.numero},\n`;
-      });
-    } else if (exportType === 'stats') {
-      // Export statistiques
-      csvContent = `Statistiques - ${course?.nom}\n`;
-      csvContent += `Nombre d'étudiants: ${etudiants.filter(e => e.classe === course?.classe).length}\n`;
-      csvContent += `Nombre d'évaluations: ${evaluations.filter(e => e.coursId === selectedCours).length}\n`;
-      csvContent += `Nombre de notes: ${courseNotes.length}\n`;
-    }
+    });
 
     // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `export_${course?.nom}_${exportType}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `export_${etablissement?.nom.replace(/\s+/g, '_')}_${selectedAnneeScolaire || 'complet'}_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
 
@@ -124,127 +145,129 @@ export function ExportManager() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Export Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Configuration d'Export
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Cours/Module</label>
-              <Select value={selectedCours} onValueChange={setSelectedCours}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un cours" />
-                </SelectTrigger>
-                <SelectContent>
-                  {cours.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.nom} - {course.classe}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <Tabs value={exportType} onValueChange={(value: any) => setExportType(value)} className="space-y-6">
+      <TabsList className="grid w-full grid-cols-4">
+        {exportTypes.map((type) => (
+          <TabsTrigger key={type.value} value={type.value} className="flex items-center gap-2">
+            <type.icon className="h-4 w-4" />
+            {type.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">Type d'export</label>
-              <Select value={exportType} onValueChange={(value: any) => setExportType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {exportTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
-                        <type.icon className="h-4 w-4" />
-                        {type.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-3 block">Colonnes à inclure</label>
-            <div className="grid gap-2 md:grid-cols-3">
-              {availableColumns.map((column) => (
-                <div key={column.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={column.id}
-                    checked={selectedColumns.includes(column.id)}
-                    onCheckedChange={() => toggleColumn(column.id)}
-                    disabled={exportType === 'presence' && !['nom', 'prenom', 'numero', 'signature'].includes(column.id)}
-                  />
-                  <label htmlFor={column.id} className="text-sm">
-                    {column.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="logo"
-              checked={includeLogo}
-              onCheckedChange={(checked) => setIncludeLogo(checked as boolean)}
-            />
-            <label htmlFor="logo" className="text-sm">
-              Inclure le logo de l'université/institut
-            </label>
-          </div>
-
-          <div className="flex justify-end">
-            <Button onClick={handleExport} disabled={!selectedCours}>
-              <Download className="h-4 w-4 mr-2" />
-              Exporter
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Export Statistics */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <TabsContent value="ecole">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-green-600" />
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Export par École/Université
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">Exports ce mois</p>
-                <p className="text-2xl font-bold">12</p>
+                <label className="text-sm font-medium mb-2 block">École/Université *</label>
+                <Select value={selectedEtablissement} onValueChange={setSelectedEtablissement}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un établissement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {etablissements.map((etablissement) => (
+                      <SelectItem key={etablissement.id} value={etablissement.id}>
+                        <div className="flex items-center gap-2">
+                          <img src={etablissement.logo} alt="" className="w-4 h-4 rounded" />
+                          {etablissement.nom}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Année scolaire</label>
+                <Select value={selectedAnneeScolaire} onValueChange={setSelectedAnneeScolaire}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes les années" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Toutes les années</SelectItem>
+                    {anneesScoolaires.map((annee) => (
+                      <SelectItem key={annee} value={annee}>
+                        {annee}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <History className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Dernier export</p>
-                <p className="font-medium">Il y a 2 jours</p>
+
+            <div>
+              <label className="text-sm font-medium mb-3 block">Colonnes à inclure</label>
+              <div className="grid gap-2 md:grid-cols-3">
+                {availableColumns.map((column) => (
+                  <div key={column.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={column.id}
+                      checked={selectedColumns.includes(column.id)}
+                      onCheckedChange={() => toggleColumn(column.id)}
+                    />
+                    <label htmlFor={column.id} className="text-sm">
+                      {column.label}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Format préféré</p>
-              <p className="font-medium">Excel (.xlsx)</p>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="logo"
+                checked={includeLogo}
+                onCheckedChange={(checked) => setIncludeLogo(checked as boolean)}
+              />
+              <label htmlFor="logo" className="text-sm">
+                Inclure le logo de l'université/institut
+              </label>
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={handleExport} disabled={!selectedEtablissement}>
+                <Download className="h-4 w-4 mr-2" />
+                Exporter l'établissement complet
+              </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </TabsContent>
+
+      {/* Placeholder for other tabs */}
+      <TabsContent value="notes">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">Export par notes - En développement</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="stats">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">Export statistiques - En développement</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="presence">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">Export feuilles de présence - En développement</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 }

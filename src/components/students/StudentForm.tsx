@@ -16,6 +16,7 @@ const studentSchema = z.object({
   etablissementId: z.string().min(1, 'Veuillez sélectionner un établissement'),
   classe: z.string().min(1, 'Veuillez spécifier la classe'),
   email: z.string().email('Email invalide').optional().or(z.literal('')),
+  anneeScolaire: z.string().min(1, 'Veuillez spécifier l\'année scolaire'),
 });
 
 type StudentFormData = z.infer<typeof studentSchema>;
@@ -39,6 +40,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
       etablissementId: '',
       classe: '',
       email: '',
+      anneeScolaire: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
     },
   });
 
@@ -54,6 +56,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
           etablissementId: existingStudent.etablissementId,
           classe: existingStudent.classe,
           email: existingStudent.email || '',
+          anneeScolaire: existingStudent.anneeScolaire,
         });
       }
     }
@@ -91,6 +94,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
           etablissementId: data.etablissementId,
           classe: data.classe,
           email: data.email || undefined,
+          anneeScolaire: data.anneeScolaire,
         });
         toast({
           title: "Étudiant ajouté",
@@ -221,6 +225,20 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
                       placeholder="Ex: jean.dupont@lycee.fr" 
                       {...field} 
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="anneeScolaire"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Année scolaire *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: 2024-2025" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

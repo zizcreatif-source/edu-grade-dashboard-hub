@@ -173,6 +173,7 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
           classe: student.classe,
           email: student.email || undefined,
           etablissementId: selectedEtablissement,
+          anneeScolaire: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
         });
       }
 
