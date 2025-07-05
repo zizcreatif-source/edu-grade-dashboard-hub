@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Eye, Save, Upload, X, Plus, ExternalLink } from "lucide-react";
+import { Eye, Save, Upload, X, Plus, ExternalLink, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,8 @@ export function LandingPageManager() {
   const [newSpecialite, setNewSpecialite] = useState("");
   const [loading, setLoading] = useState(true);
   const [landingPageId, setLandingPageId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [landingData, setLandingData] = useState<LandingPageData>({
     personalInfo: {
@@ -180,6 +182,76 @@ export function LandingPageManager() {
     }));
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Vérifier la taille du fichier (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Fichier trop volumineux",
+        description: "La photo ne doit pas dépasser 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Vérifier le type de fichier
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Format non supporté",
+        description: "Veuillez sélectionner une image (JPG, PNG, etc.).",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setUploading(true);
+      
+      // Créer un nom de fichier unique
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/profile-${Date.now()}.${fileExt}`;
+      
+      // Upload vers Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Récupérer l'URL publique
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      // Mettre à jour les données
+      updatePersonalInfo('photo', publicUrl);
+
+      toast({
+        title: "Photo uploadée",
+        description: "Votre photo de profil a été mise à jour avec succès."
+      });
+
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast({
+        title: "Erreur d'upload",
+        description: "Impossible d'uploader la photo. Réessayez plus tard.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -286,19 +358,38 @@ export function LandingPageManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="photo">Photo de profil (URL)</Label>
+                <Label htmlFor="photo">Photo de profil</Label>
                 <div className="flex gap-2">
                   <Input
                     id="photo"
                     value={landingData.personalInfo.photo}
                     onChange={(e) => updatePersonalInfo('photo', e.target.value)}
                     disabled={!isEditing}
-                    placeholder="https://..."
+                    placeholder="https:// ou uploadez depuis votre ordinateur"
                   />
                   {isEditing && (
-                    <Button variant="outline" size="icon">
-                      <Upload className="h-4 w-4" />
-                    </Button>
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={triggerFileUpload}
+                        disabled={uploading}
+                        title="Uploader depuis votre ordinateur"
+                      >
+                        {uploading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                    </>
                   )}
                 </div>
                 {landingData.personalInfo.photo && (
@@ -306,9 +397,14 @@ export function LandingPageManager() {
                     <img
                       src={landingData.personalInfo.photo}
                       alt="Aperçu"
-                      className="w-24 h-24 rounded-lg object-cover"
+                      className="w-24 h-24 rounded-lg object-cover border"
                     />
                   </div>
+                )}
+                {isEditing && (
+                  <p className="text-xs text-muted-foreground">
+                    Formats acceptés: JPG, PNG, GIF • Taille max: 5MB
+                  </p>
                 )}
               </div>
             </CardContent>

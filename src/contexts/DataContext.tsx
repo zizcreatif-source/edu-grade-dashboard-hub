@@ -279,8 +279,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setLoading(true);
     try {
+      // Charger les établissements d'abord
+      await loadEtablissements();
+      
+      // Ensuite charger le reste des données
       await Promise.all([
-        loadEtablissements(),
         loadCours(),
         loadEtudiants(),
         loadNotes(),
@@ -399,7 +402,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
-    setEtablissements((data || []).map(transformEtablissement));
+    // Si aucun établissement existe, créer un établissement par défaut
+    if (!data || data.length === 0) {
+      await createDefaultEtablissement();
+      // Recharger après création
+      const { data: newData } = await supabase
+        .from('etablissements')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setEtablissements((newData || []).map(transformEtablissement));
+    } else {
+      setEtablissements(data.map(transformEtablissement));
+    }
+  };
+
+  const createDefaultEtablissement = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('etablissements')
+      .insert({
+        user_id: user.id,
+        nom: 'Mon Établissement',
+        configuration: {
+          noteMin: 0,
+          noteMax: 20,
+          coefficients: { controle: 1, examen: 2, tp: 1.5, oral: 1 }
+        }
+      });
+    
+    if (error) {
+      console.error('Error creating default etablissement:', error);
+    }
   };
 
   const loadCours = async () => {

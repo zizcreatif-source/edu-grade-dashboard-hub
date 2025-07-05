@@ -12,21 +12,21 @@ export function QuickActions() {
       description: "Saisir rapidement une note",
       icon: Plus,
       color: "bg-primary hover:bg-primary/90",
-      onClick: () => navigate("/notes/nouveau")
+      onClick: () => navigate("/notes")
     },
     {
-      title: "Ajouter étudiant",
+      title: "Ajouter étudiant", 
       description: "Inscrire un nouvel étudiant",
       icon: Users,
       color: "bg-accent hover:bg-accent/90",
-      onClick: () => navigate("/etudiants/nouveau")
+      onClick: () => navigate("/etudiants")
     },
     {
-      title: "Créer évaluation",
-      description: "Planifier une évaluation",
+      title: "Créer cours",
+      description: "Ajouter une nouvelle matière",
       icon: ClipboardList,
       color: "bg-success hover:bg-success/90",
-      onClick: () => navigate("/evaluations/nouveau")
+      onClick: () => navigate("/cours")
     },
     {
       title: "Exporter données",
