@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExportManager } from '@/components/settings/ExportManager';
 import { BrandingManager } from '@/components/settings/BrandingManager';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
+import { VersionManager } from '@/components/settings/VersionManager';
 
 export default function Parametres() {
   return (
@@ -14,8 +15,8 @@ export default function Parametres() {
         <p className="text-muted-foreground">Configuration et personnalisation d'EduGrade</p>
       </div>
 
-      <Tabs defaultValue="export" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="export" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="export" className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export
@@ -32,6 +33,10 @@ export default function Parametres() {
             <FileText className="h-4 w-4" />
             Templates
           </TabsTrigger>
+          <TabsTrigger value="versions" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Versions
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="export">
@@ -46,18 +51,8 @@ export default function Parametres() {
           <ThemeCustomizer />
         </TabsContent>
 
-        <TabsContent value="templates">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Gestion des Templates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Fonctionnalité en cours de développement</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="versions">
+          <VersionManager />
         </TabsContent>
       </Tabs>
     </div>
