@@ -7,6 +7,7 @@ import { BrandingManager } from '@/components/settings/BrandingManager';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { VersionManager } from '@/components/settings/VersionManager';
 import { DataManager } from '@/components/settings/DataManager';
+import { TemplateManager } from '@/components/settings/TemplateManager';
 
 export default function Parametres() {
   return (
@@ -65,17 +66,7 @@ export default function Parametres() {
         </TabsContent>
 
         <TabsContent value="templates">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Gestion des Templates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Fonctionnalité en cours de développement</p>
-            </CardContent>
-          </Card>
+          <TemplateManager />
         </TabsContent>
       </Tabs>
     </div>
