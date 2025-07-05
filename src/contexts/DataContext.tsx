@@ -44,7 +44,6 @@ export interface Note {
   coursId: string;
   evaluation: string;
   note: number;
-  coefficient: number;
   date: string;
   commentaire?: string;
 }
@@ -54,7 +53,6 @@ export interface Evaluation {
   coursId: string;
   nom: string;
   date: string;
-  coefficient: number;
   type: 'controle' | 'examen' | 'tp' | 'oral';
   description?: string;
   estNoteGroupe?: boolean;
