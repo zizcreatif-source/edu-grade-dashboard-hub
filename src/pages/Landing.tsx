@@ -149,10 +149,6 @@ export default function Landing() {
                   <Mail className="mr-2 h-4 w-4" />
                   Me contacter
                 </Button>
-                <Button size="lg" variant="outline">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Prendre RDV
-                </Button>
               </div>
             </div>
 
@@ -222,11 +218,6 @@ export default function Landing() {
                   <Button className="w-full bg-gradient-to-r from-primary to-primary-glow" size="lg">
                     <Mail className="mr-2 h-4 w-4" />
                     Envoyer un message
-                  </Button>
-                  
-                  <Button variant="outline" className="w-full" size="lg">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Prendre rendez-vous
                   </Button>
                 </div>
               </div>

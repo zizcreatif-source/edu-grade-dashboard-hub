@@ -51,10 +51,10 @@ const navigationItems = [
     description: "Saisie et consultation"
   },
   { 
-    title: "Ma Page", 
+    title: "Page d'accueil", 
     url: "/", 
     icon: Globe,
-    description: "Page d'accueil publique"
+    description: "Retour à la page publique"
   },
   { 
     title: "Paramètres", 
