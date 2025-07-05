@@ -82,6 +82,14 @@ export interface SeanceCours {
   devoirs?: string;
 }
 
+export interface Presence {
+  id: string;
+  seanceId: string;
+  etudiantId: string;
+  statut: 'present' | 'absent' | 'retard';
+  commentaire?: string;
+}
+
 interface DataContextType {
   etablissements: Etablissement[];
   cours: Cours[];
@@ -90,6 +98,7 @@ interface DataContextType {
   evaluations: Evaluation[];
   groupes: Groupe[];
   seances: SeanceCours[];
+  presences: Presence[];
   // CRUD Operations
   addEtablissement: (etablissement: Omit<Etablissement, 'id'>) => void;
   updateEtablissement: (id: string, etablissement: Partial<Etablissement>) => void;
@@ -112,6 +121,9 @@ interface DataContextType {
   addSeance: (seance: Omit<SeanceCours, 'id'>) => void;
   updateSeance: (id: string, seance: Partial<SeanceCours>) => void;
   deleteSeance: (id: string) => void;
+  addPresence: (presence: Omit<Presence, 'id'>) => void;
+  updatePresence: (id: string, presence: Partial<Presence>) => void;
+  deletePresence: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -244,6 +256,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [groupes, setGroupes] = useState<Groupe[]>([]);
   const [seances, setSeances] = useState<SeanceCours[]>([]);
+  const [presences, setPresences] = useState<Presence[]>([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -412,6 +425,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSeances(prev => prev.filter(s => s.id !== id));
   };
 
+  // Presences
+  const addPresence = (presence: Omit<Presence, 'id'>) => {
+    const newPresence = { ...presence, id: generateId() };
+    setPresences(prev => [...prev, newPresence]);
+  };
+
+  const updatePresence = (id: string, presence: Partial<Presence>) => {
+    setPresences(prev => prev.map(p => p.id === id ? { ...p, ...presence } : p));
+  };
+
+  const deletePresence = (id: string) => {
+    setPresences(prev => prev.filter(p => p.id !== id));
+  };
+
   const value = {
     etablissements,
     cours,
@@ -420,6 +447,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     evaluations,
     groupes,
     seances,
+    presences,
     addEtablissement,
     updateEtablissement,
     deleteEtablissement,
@@ -440,7 +468,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     deleteGroupe,
     addSeance,
     updateSeance,
-    deleteSeance
+    deleteSeance,
+    addPresence,
+    updatePresence,
+    deletePresence
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

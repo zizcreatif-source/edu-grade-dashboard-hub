@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Clock, BookOpen, Target, FileText, Calendar, Edit, Trash2 } from 'lucide-react';
+import { Plus, Clock, BookOpen, Target, FileText, Calendar, Edit, Trash2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useData, SeanceCours } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { AttendanceManager } from './AttendanceManager';
 
 const seanceSchema = z.object({
   date: z.string().min(1, 'La date est requise'),
@@ -287,45 +289,58 @@ export function SeanceManager({ coursId }: SeanceManagerProps) {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">Contenu</span>
-                </div>
-                <p className="text-sm text-muted-foreground ml-6">{seance.contenu}</p>
-              </div>
+               <Tabs defaultValue="details" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="details">Détails</TabsTrigger>
+                  <TabsTrigger value="attendance">Présences</TabsTrigger>
+                </TabsList>
 
-              {seance.objectifs && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">Objectifs</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground ml-6">{seance.objectifs}</p>
-                </div>
-              )}
-
-              <div className="grid gap-4 md:grid-cols-2">
-                {seance.ressources && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">Ressources</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground ml-6">{seance.ressources}</p>
-                  </div>
-                )}
-
-                {seance.devoirs && (
+                <TabsContent value="details" className="space-y-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <BookOpen className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">Devoirs</span>
+                      <span className="font-medium text-sm">Contenu</span>
                     </div>
-                    <p className="text-sm text-muted-foreground ml-6">{seance.devoirs}</p>
+                    <p className="text-sm text-muted-foreground ml-6">{seance.contenu}</p>
                   </div>
-                )}
-              </div>
+
+                  {seance.objectifs && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="h-4 w-4 text-primary" />
+                        <span className="font-medium text-sm">Objectifs</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-6">{seance.objectifs}</p>
+                    </div>
+                  )}
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {seance.ressources && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Ressources</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-6">{seance.ressources}</p>
+                      </div>
+                    )}
+
+                    {seance.devoirs && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Devoirs</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-6">{seance.devoirs}</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="attendance">
+                  <AttendanceManager seanceId={seance.id} coursId={coursId} />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         ))}
