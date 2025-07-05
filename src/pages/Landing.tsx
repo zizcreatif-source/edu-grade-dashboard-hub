@@ -88,7 +88,7 @@ export default function Landing() {
             </Button>
           ) : (
             <Button asChild>
-              <a href="/auth">Connexion</a>
+              <a href="/auth">Connexion Professeur</a>
             </Button>
           )}
         </div>

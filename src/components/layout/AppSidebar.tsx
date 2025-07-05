@@ -28,7 +28,7 @@ import { NotificationCenter } from "@/components/notifications/NotificationCente
 const navigationItems = [
   { 
     title: "Dashboard", 
-    url: "/", 
+    url: "/dashboard", 
     icon: LayoutDashboard,
     description: "Vue d'ensemble"
   },
@@ -52,7 +52,7 @@ const navigationItems = [
   },
   { 
     title: "Ma Page", 
-    url: "/landing", 
+    url: "/", 
     icon: Globe,
     description: "Page d'accueil publique"
   },
@@ -71,8 +71,8 @@ export function AppSidebar() {
   const currentPath = location.pathname;
 
   const isActive = (path: string) => {
-    if (path === "/") {
-      return currentPath === "/";
+    if (path === "/dashboard") {
+      return currentPath === "/dashboard";
     }
     return currentPath.startsWith(path);
   };

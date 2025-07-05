@@ -34,9 +34,9 @@ function AppRouter() {
   useKeyboardShortcuts();
   return (
     <Routes>
-      <Route path="/landing" element={<Landing />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/" element={
+      <Route path="/dashboard" element={
         <ProtectedRoute>
           <AppLayout>
             <Dashboard />

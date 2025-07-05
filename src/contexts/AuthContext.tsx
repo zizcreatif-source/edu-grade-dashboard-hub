@@ -118,17 +118,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (data.user && !error) {
-        // Force page reload for clean state
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 100);
-      }
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (data.user && !error) {
+          // Force page reload for clean state
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 100);
+        }
       
       return { error };
     } catch (error) {
@@ -144,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       });
       
