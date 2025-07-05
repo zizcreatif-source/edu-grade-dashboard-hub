@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 // Data Types
 export interface Etablissement {
@@ -244,6 +246,7 @@ const mockData = {
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isAuthenticated } = useAuth();
   const [etablissements, setEtablissements] = useState<Etablissement[]>([]);
   const [cours, setCours] = useState<Cours[]>([]);
   const [etudiants, setEtudiants] = useState<Etudiant[]>([]);
@@ -252,29 +255,256 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [groupes, setGroupes] = useState<Groupe[]>([]);
   const [seances, setSeances] = useState<SeanceCours[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load data from localStorage on mount
+  // Load data from Supabase when user is authenticated
   useEffect(() => {
-    const loadData = () => {
-      const savedEtablissements = localStorage.getItem('edugrade_etablissements');
-      const savedCours = localStorage.getItem('edugrade_cours');
-      const savedEtudiants = localStorage.getItem('edugrade_etudiants');
-      const savedNotes = localStorage.getItem('edugrade_notes');
-      const savedEvaluations = localStorage.getItem('edugrade_evaluations');
-      const savedGroupes = localStorage.getItem('edugrade_groupes');
-      const savedSeances = localStorage.getItem('edugrade_seances');
+    if (isAuthenticated && user) {
+      loadAllData();
+    } else {
+      // Clear data when user logs out
+      setEtablissements([]);
+      setCours([]);
+      setEtudiants([]);
+      setNotes([]);
+      setEvaluations([]);
+      setGroupes([]);
+      setSeances([]);
+      setPresences([]);
+    }
+  }, [isAuthenticated, user]);
 
-      setEtablissements(savedEtablissements ? JSON.parse(savedEtablissements) : mockData.etablissements);
-      setCours(savedCours ? JSON.parse(savedCours) : mockData.cours);
-      setEtudiants(savedEtudiants ? JSON.parse(savedEtudiants) : mockData.etudiants);
-      setNotes(savedNotes ? JSON.parse(savedNotes) : mockData.notes);
-      setEvaluations(savedEvaluations ? JSON.parse(savedEvaluations) : mockData.evaluations);
-      setGroupes(savedGroupes ? JSON.parse(savedGroupes) : mockData.groupes);
-      setSeances(savedSeances ? JSON.parse(savedSeances) : mockData.seances);
-    };
+  const loadAllData = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadEtablissements(),
+        loadCours(),
+        loadEtudiants(),
+        loadNotes(),
+        loadEvaluations(),
+        loadGroupes(),
+        loadSeances(),
+        loadPresences()
+      ]);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadData();
-  }, []);
+  // Transform functions for Supabase data
+  const transformEtablissement = (data: any): Etablissement => ({
+    id: data.id,
+    nom: data.nom,
+    logo: data.logo,
+    configuration: typeof data.configuration === 'string' 
+      ? JSON.parse(data.configuration)
+      : data.configuration || {
+          noteMin: 0,
+          noteMax: 20,
+          coefficients: { controle: 1, examen: 2, tp: 1.5, oral: 1 }
+        }
+  });
+
+  const transformCours = (data: any): Cours => ({
+    id: data.id,
+    nom: data.nom,
+    etablissementId: data.etablissement_id,
+    quantumHoraire: data.quantum_horaire,
+    progression: data.progression,
+    couleur: data.couleur,
+    description: data.description,
+    classe: data.classe,
+    anneeScolaire: data.annee_scolaire,
+    responsableClasse: data.responsable_classe
+  });
+
+  const transformEtudiant = (data: any): Etudiant => ({
+    id: data.id,
+    nom: data.nom,
+    prenom: data.prenom,
+    numero: data.numero,
+    etablissementId: data.etablissement_id,
+    classe: data.classe,
+    email: data.email,
+    avatar: data.avatar,
+    anneeScolaire: data.annee_scolaire,
+    groupeIds: data.groupe_ids || []
+  });
+
+  const transformNote = (data: any): Note => ({
+    id: data.id,
+    etudiantId: data.etudiant_id,
+    coursId: data.cours_id,
+    evaluation: data.evaluation,
+    note: parseFloat(data.note),
+    date: data.date,
+    commentaire: data.commentaire
+  });
+
+  const transformEvaluation = (data: any): Evaluation => ({
+    id: data.id,
+    coursId: data.cours_id,
+    nom: data.nom,
+    date: data.date,
+    type: data.type as 'controle' | 'examen' | 'tp' | 'oral',
+    description: data.description,
+    estNoteGroupe: data.est_note_groupe,
+    groupeId: data.groupe_id
+  });
+
+  const transformGroupe = (data: any): Groupe => ({
+    id: data.id,
+    nom: data.nom,
+    description: data.description,
+    etudiantIds: data.etudiant_ids || [],
+    responsableId: data.responsable_id,
+    classe: data.classe,
+    anneeScolaire: data.annee_scolaire
+  });
+
+  const transformSeance = (data: any): SeanceCours => ({
+    id: data.id,
+    coursId: data.cours_id,
+    date: data.date,
+    duree: parseFloat(data.duree),
+    contenu: data.contenu,
+    objectifs: data.objectifs,
+    ressources: data.ressources,
+    devoirs: data.devoirs
+  });
+
+  const transformPresence = (data: any): Presence => ({
+    id: data.id,
+    seanceId: data.seance_id,
+    etudiantId: data.etudiant_id,
+    statut: data.statut as 'present' | 'absent' | 'retard',
+    commentaire: data.commentaire
+  });
+
+  // Load functions from Supabase
+  const loadEtablissements = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('etablissements')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading etablissements:', error);
+      return;
+    }
+    
+    setEtablissements((data || []).map(transformEtablissement));
+  };
+
+  const loadCours = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('cours')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading cours:', error);
+      return;
+    }
+    
+    setCours((data || []).map(transformCours));
+  };
+
+  const loadEtudiants = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('etudiants')
+      .select('*')
+      .order('nom', { ascending: true });
+    
+    if (error) {
+      console.error('Error loading etudiants:', error);
+      return;
+    }
+    
+    setEtudiants((data || []).map(transformEtudiant));
+  };
+
+  const loadNotes = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading notes:', error);
+      return;
+    }
+    
+    setNotes((data || []).map(transformNote));
+  };
+
+  const loadEvaluations = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('evaluations')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading evaluations:', error);
+      return;
+    }
+    
+    setEvaluations((data || []).map(transformEvaluation));
+  };
+
+  const loadGroupes = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('groupes')
+      .select('*')
+      .order('nom', { ascending: true });
+    
+    if (error) {
+      console.error('Error loading groupes:', error);
+      return;
+    }
+    
+    setGroupes((data || []).map(transformGroupe));
+  };
+
+  const loadSeances = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('seances')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading seances:', error);
+      return;
+    }
+    
+    setSeances((data || []).map(transformSeance));
+  };
+
+  const loadPresences = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('presences')
+      .select('*');
+    
+    if (error) {
+      console.error('Error loading presences:', error);
+      return;
+    }
+    
+    setPresences((data || []).map(transformPresence));
+  };
 
   // Save data to localStorage whenever state changes
   useEffect(() => {
