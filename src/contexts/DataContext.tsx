@@ -71,6 +71,17 @@ export interface Groupe {
   anneeScolaire: string;
 }
 
+export interface SeanceCours {
+  id: string;
+  coursId: string;
+  date: string;
+  duree: number; // en heures
+  contenu: string;
+  objectifs?: string;
+  ressources?: string;
+  devoirs?: string;
+}
+
 interface DataContextType {
   etablissements: Etablissement[];
   cours: Cours[];
@@ -78,6 +89,7 @@ interface DataContextType {
   notes: Note[];
   evaluations: Evaluation[];
   groupes: Groupe[];
+  seances: SeanceCours[];
   // CRUD Operations
   addEtablissement: (etablissement: Omit<Etablissement, 'id'>) => void;
   updateEtablissement: (id: string, etablissement: Partial<Etablissement>) => void;
@@ -97,6 +109,9 @@ interface DataContextType {
   addGroupe: (groupe: Omit<Groupe, 'id'>) => void;
   updateGroupe: (id: string, groupe: Partial<Groupe>) => void;
   deleteGroupe: (id: string) => void;
+  addSeance: (seance: Omit<SeanceCours, 'id'>) => void;
+  updateSeance: (id: string, seance: Partial<SeanceCours>) => void;
+  deleteSeance: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -217,7 +232,8 @@ const mockData = {
       description: 'Contrôle sur les fonctions'
     }
   ] as Evaluation[],
-  groupes: [] as Groupe[]
+  groupes: [] as Groupe[],
+  seances: [] as SeanceCours[]
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -227,6 +243,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [notes, setNotes] = useState<Note[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [groupes, setGroupes] = useState<Groupe[]>([]);
+  const [seances, setSeances] = useState<SeanceCours[]>([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -237,6 +254,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedNotes = localStorage.getItem('edugrade_notes');
       const savedEvaluations = localStorage.getItem('edugrade_evaluations');
       const savedGroupes = localStorage.getItem('edugrade_groupes');
+      const savedSeances = localStorage.getItem('edugrade_seances');
 
       setEtablissements(savedEtablissements ? JSON.parse(savedEtablissements) : mockData.etablissements);
       setCours(savedCours ? JSON.parse(savedCours) : mockData.cours);
@@ -244,6 +262,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setNotes(savedNotes ? JSON.parse(savedNotes) : mockData.notes);
       setEvaluations(savedEvaluations ? JSON.parse(savedEvaluations) : mockData.evaluations);
       setGroupes(savedGroupes ? JSON.parse(savedGroupes) : mockData.groupes);
+      setSeances(savedSeances ? JSON.parse(savedSeances) : mockData.seances);
     };
 
     loadData();
@@ -273,6 +292,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('edugrade_groupes', JSON.stringify(groupes));
   }, [groupes]);
+
+  useEffect(() => {
+    localStorage.setItem('edugrade_seances', JSON.stringify(seances));
+  }, [seances]);
 
   // CRUD Operations
   const generateId = () => Date.now().toString();
@@ -366,6 +389,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGroupes(prev => prev.filter(g => g.id !== id));
   };
 
+  // Séances
+  const addSeance = (seance: Omit<SeanceCours, 'id'>) => {
+    const newSeance = { ...seance, id: generateId() };
+    setSeances(prev => [...prev, newSeance]);
+    
+    // Mettre à jour automatiquement la progression du cours
+    const coursSeances = seances.filter(s => s.coursId === seance.coursId);
+    const totalHeuresEffectuees = coursSeances.reduce((acc, s) => acc + s.duree, 0) + seance.duree;
+    const coursActuel = cours.find(c => c.id === seance.coursId);
+    if (coursActuel) {
+      const nouvelleProgression = Math.min(100, (totalHeuresEffectuees / coursActuel.quantumHoraire) * 100);
+      updateCours(seance.coursId, { progression: Math.round(nouvelleProgression) });
+    }
+  };
+
+  const updateSeance = (id: string, seance: Partial<SeanceCours>) => {
+    setSeances(prev => prev.map(s => s.id === id ? { ...s, ...seance } : s));
+  };
+
+  const deleteSeance = (id: string) => {
+    setSeances(prev => prev.filter(s => s.id !== id));
+  };
+
   const value = {
     etablissements,
     cours,
@@ -373,6 +419,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     notes,
     evaluations,
     groupes,
+    seances,
     addEtablissement,
     updateEtablissement,
     deleteEtablissement,
@@ -390,7 +437,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     deleteEvaluation,
     addGroupe,
     updateGroupe,
-    deleteGroupe
+    deleteGroupe,
+    addSeance,
+    updateSeance,
+    deleteSeance
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
