@@ -53,12 +53,6 @@ const navigationItems = [
     icon: Settings,
     description: "Configuration"
   },
-  { 
-    title: "Données", 
-    url: "/donnees", 
-    icon: Settings,
-    description: "Gestion système"
-  },
 ];
 
 export function AppSidebar() {

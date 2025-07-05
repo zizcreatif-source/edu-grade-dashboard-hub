@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Settings, Download, Palette, Building2, FileText, History } from 'lucide-react';
+import { Settings, Download, Palette, Building2, FileText, History, Database } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExportManager } from '@/components/settings/ExportManager';
 import { BrandingManager } from '@/components/settings/BrandingManager';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { VersionManager } from '@/components/settings/VersionManager';
+import { DataManager } from '@/components/settings/DataManager';
 
 export default function Parametres() {
   return (
@@ -16,7 +17,7 @@ export default function Parametres() {
       </div>
 
         <Tabs defaultValue="export" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="export" className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export
@@ -37,6 +38,10 @@ export default function Parametres() {
             <Settings className="h-4 w-4" />
             Versions
           </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Données
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="export">
@@ -53,6 +58,24 @@ export default function Parametres() {
 
         <TabsContent value="versions">
           <VersionManager />
+        </TabsContent>
+
+        <TabsContent value="data">
+          <DataManager />
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Gestion des Templates
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Fonctionnalité en cours de développement</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

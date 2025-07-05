@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
 
-export default function Donnees() {
+export function DataManager() {
   const { etablissements, cours, etudiants, notes, evaluations } = useData();
   const { toast } = useToast();
   const [confirmationText, setConfirmationText] = useState('');
@@ -74,11 +74,10 @@ export default function Donnees() {
 
   const getTotalSize = () => {
     const total = etablissements.length + cours.length + etudiants.length + notes.length + evaluations.length;
-    return (total * 0.5).toFixed(1); // Simulate KB size
+    return (total * 0.5).toFixed(1);
   };
 
   const handleExportCollection = (collectionName: string) => {
-    // Simulate export
     toast({
       title: "Export en cours",
       description: `Export de la collection ${collectionName} démarré...`,
@@ -119,12 +118,6 @@ export default function Donnees() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Données</h1>
-        <p className="text-muted-foreground">Vue d'ensemble et maintenance des données système</p>
-      </div>
-
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -177,17 +170,15 @@ export default function Donnees() {
         {collections.map((collection) => (
           <Card key={collection.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${collection.bgColor}`}>
-                    <collection.icon className={`h-5 w-5 ${collection.color}`} />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{collection.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {collection.description}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${collection.bgColor}`}>
+                  <collection.icon className={`h-5 w-5 ${collection.color}`} />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">{collection.name}</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {collection.description}
+                  </p>
                 </div>
               </div>
             </CardHeader>
