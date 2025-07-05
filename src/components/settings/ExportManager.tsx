@@ -104,9 +104,8 @@ export function ExportManager() {
             case 'moyennes': {
               const studentNotes = notes.filter(n => n.etudiantId === student.id);
               if (studentNotes.length === 0) return '0';
-              const weighted = studentNotes.reduce((sum, n) => sum + (n.note * n.coefficient), 0);
-              const totalCoeff = studentNotes.reduce((sum, n) => sum + n.coefficient, 0);
-              return totalCoeff > 0 ? (weighted / totalCoeff).toFixed(1) : '0';
+              const average = studentNotes.reduce((sum, n) => sum + n.note, 0) / studentNotes.length;
+              return average.toFixed(1);
             }
             case 'responsable': return classCourse?.responsableClasse || '';
             case 'groupes': {

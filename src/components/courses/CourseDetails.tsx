@@ -52,10 +52,8 @@ export function CourseDetails({ coursId }: CourseDetailsProps) {
     const etudiantNotes = getEtudiantNotes(etudiantId);
     if (etudiantNotes.length === 0) return 0;
     
-    const totalPoints = etudiantNotes.reduce((acc, note) => acc + (note.note * note.coefficient), 0);
-    const totalCoeff = etudiantNotes.reduce((acc, note) => acc + note.coefficient, 0);
-    
-    return totalCoeff > 0 ? totalPoints / totalCoeff : 0;
+    const total = etudiantNotes.reduce((acc, note) => acc + note.note, 0);
+    return total / etudiantNotes.length;
   };
 
   return (
@@ -280,9 +278,6 @@ export function CourseDetails({ coursId }: CourseDetailsProps) {
                       <Badge variant="outline" className="capitalize">
                         {evaluation.type}
                       </Badge>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Coeff. {evaluation.coefficient}
-                      </p>
                     </div>
                   </div>
                 ))}

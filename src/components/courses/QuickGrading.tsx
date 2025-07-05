@@ -86,7 +86,6 @@ export function QuickGrading({ coursId, students }: QuickGradingProps) {
             coursId: coursId,
             evaluation: selectedEval.nom,
             note: grade.note,
-            coefficient: selectedEval.coefficient,
             date: new Date().toISOString().split('T')[0],
           };
 
@@ -193,7 +192,7 @@ export function QuickGrading({ coursId, students }: QuickGradingProps) {
                 <SelectContent>
                   {courseEvaluations.map((evaluation) => (
                     <SelectItem key={evaluation.id} value={evaluation.id}>
-                      {evaluation.nom} - {evaluation.type} (Coeff. {evaluation.coefficient})
+                      {evaluation.nom} - {evaluation.type}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -204,9 +203,6 @@ export function QuickGrading({ coursId, students }: QuickGradingProps) {
               <div className="flex gap-2 items-center">
                 <Badge variant="outline" className="capitalize">
                   {selectedEval.type}
-                </Badge>
-                <Badge variant="secondary">
-                  Coeff. {selectedEval.coefficient}
                 </Badge>
               </div>
             )}

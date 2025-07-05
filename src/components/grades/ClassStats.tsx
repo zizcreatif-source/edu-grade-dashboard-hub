@@ -63,8 +63,7 @@ export function ClassStats({ coursId, evaluationId }: ClassStatsProps) {
       const studentNotes = courseNotes.filter(n => n.etudiantId === student.id);
       if (studentNotes.length === 0) return null;
 
-      const studentAverage = studentNotes.reduce((sum, note) => sum + (note.note * note.coefficient), 0) / 
-                            studentNotes.reduce((sum, note) => sum + note.coefficient, 0);
+      const studentAverage = studentNotes.reduce((sum, note) => sum + note.note, 0) / studentNotes.length;
 
       return {
         studentId: student.id,

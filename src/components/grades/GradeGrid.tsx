@@ -81,7 +81,6 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
         coursId: coursId,
         evaluation: evaluation.nom,
         note: gradeData.note || 0,
-        coefficient: evaluation.coefficient,
         date: new Date().toISOString().split('T')[0],
         commentaire: gradeData.commentaire || undefined
       };

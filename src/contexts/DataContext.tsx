@@ -217,7 +217,6 @@ const mockData = {
       coursId: '1',
       evaluation: 'Contrôle 1',
       note: 15,
-      coefficient: 1,
       date: '2024-01-15',
       commentaire: 'Bon travail'
     },
@@ -227,7 +226,6 @@ const mockData = {
       coursId: '1',
       evaluation: 'Contrôle 1',
       note: 17,
-      coefficient: 1,
       date: '2024-01-15'
     }
   ] as Note[],
@@ -237,7 +235,6 @@ const mockData = {
       coursId: '1',
       nom: 'Contrôle Algèbre',
       date: '2024-02-15',
-      coefficient: 2,
       type: 'controle' as const,
       description: 'Contrôle sur les fonctions'
     }

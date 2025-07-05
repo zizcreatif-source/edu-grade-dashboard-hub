@@ -24,7 +24,7 @@ export function EvaluationForm({ coursId, onClose }: EvaluationFormProps) {
       description: 'Une seule évaluation finale',
       icon: GraduationCap,
       evaluations: [
-        { nom: 'Examen final', type: 'examen', coefficient: 2 }
+        { nom: 'Examen final', type: 'examen' }
       ]
     },
     {
@@ -33,8 +33,8 @@ export function EvaluationForm({ coursId, onClose }: EvaluationFormProps) {
       description: 'Un devoir en contrôle continu et un examen final',
       icon: BookOpen,
       evaluations: [
-        { nom: 'Devoir', type: 'controle', coefficient: 1 },
-        { nom: 'Examen final', type: 'examen', coefficient: 2 }
+        { nom: 'Devoir', type: 'controle' },
+        { nom: 'Examen final', type: 'examen' }
       ]
     }
   ];
@@ -60,7 +60,6 @@ export function EvaluationForm({ coursId, onClose }: EvaluationFormProps) {
           coursId: coursId,
           nom: evaluation.nom,
           type: evaluation.type as 'controle' | 'examen' | 'tp' | 'oral',
-          coefficient: evaluation.coefficient,
           date: new Date().toISOString().split('T')[0], // Date d'aujourd'hui par défaut
           description: `Évaluation créée automatiquement - ${template.title}`,
         });
@@ -125,9 +124,6 @@ export function EvaluationForm({ coursId, onClose }: EvaluationFormProps) {
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="capitalize">
                           {evaluation.type}
-                        </Badge>
-                        <Badge variant="secondary">
-                          Coeff. {evaluation.coefficient}
                         </Badge>
                       </div>
                     </div>

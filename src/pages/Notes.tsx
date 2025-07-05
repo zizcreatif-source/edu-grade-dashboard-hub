@@ -109,7 +109,7 @@ export default function Notes() {
                   <SelectContent>
                     {courseEvaluations.map((evaluation) => (
                       <SelectItem key={evaluation.id} value={evaluation.id}>
-                        {evaluation.nom} (Coeff. {evaluation.coefficient})
+                        {evaluation.nom}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -203,9 +203,6 @@ export default function Notes() {
                     </h3>
                     <Badge variant="outline" className="capitalize">
                       {selectedEval?.type}
-                    </Badge>
-                    <Badge variant="secondary">
-                      Coefficient {selectedEval?.coefficient}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">

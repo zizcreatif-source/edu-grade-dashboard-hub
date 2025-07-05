@@ -17,7 +17,6 @@ interface HistoryEntry {
   evaluation: string;
   note: number;
   previousNote?: number;
-  coefficient: number;
   date: string;
   commentaire?: string;
   action: 'created' | 'updated';
@@ -44,7 +43,6 @@ export function GradeHistory({ coursId }: GradeHistoryProps) {
         studentAvatar: student.avatar || '',
         evaluation: note.evaluation,
         note: note.note,
-        coefficient: note.coefficient,
         date: note.date,
         commentaire: note.commentaire,
         action: 'created' as const, // In a real app, you'd track this
@@ -191,7 +189,7 @@ export function GradeHistory({ coursId }: GradeHistoryProps) {
                             {entry.note}/20
                           </Badge>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Coeff. {entry.coefficient}
+                            {entry.note}/20
                           </p>
                         </div>
                       </div>
