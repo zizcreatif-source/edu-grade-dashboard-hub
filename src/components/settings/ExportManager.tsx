@@ -61,13 +61,13 @@ export function ExportManager() {
       csvContent += `LOGO: ${etablissement.logo}\n`;
     }
     csvContent += `EXPORT COMPLET - ${etablissement?.nom || 'École'}\n`;
-    csvContent += `Année scolaire: ${selectedAnneeScolaire || 'Toutes'}\n`;
+    csvContent += `Année scolaire: ${selectedAnneeScolaire === 'all' || !selectedAnneeScolaire ? 'Toutes' : selectedAnneeScolaire}\n`;
     csvContent += `Date d'export: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
 
     // Export by classes with class managers
     const schoolStudents = etudiants.filter(e => {
       if (e.etablissementId !== selectedEtablissement) return false;
-      if (selectedAnneeScolaire && e.anneeScolaire !== selectedAnneeScolaire) return false;
+      if (selectedAnneeScolaire && selectedAnneeScolaire !== 'all' && e.anneeScolaire !== selectedAnneeScolaire) return false;
       return true;
     });
 
@@ -191,7 +191,7 @@ export function ExportManager() {
                     <SelectValue placeholder="Toutes les années" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les années</SelectItem>
+                    <SelectItem value="all">Toutes les années</SelectItem>
                     {anneesScoolaires.map((annee) => (
                       <SelectItem key={annee} value={annee}>
                         {annee}
