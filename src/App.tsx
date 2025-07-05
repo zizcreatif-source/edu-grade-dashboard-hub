@@ -29,50 +29,48 @@ const queryClient = new QueryClient({
   },
 });
 
-function AppContent() {
+function AppRouter() {
   useKeyboardShortcuts();
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/cours" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Cours />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/etudiants" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Etudiants />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/notes" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Notes />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/parametres" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Parametres />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Dashboard />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/cours" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Cours />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/etudiants" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Etudiants />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/notes" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Notes />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/parametres" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Parametres />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
@@ -87,7 +85,9 @@ const App = () => (
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
-                  <AppContent />
+                  <BrowserRouter>
+                    <AppRouter />
+                  </BrowserRouter>
                 </TooltipProvider>
               </NotificationProvider>
             </OfflineProvider>
