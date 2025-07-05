@@ -9,7 +9,7 @@ import { GraduationCap, Mail, Lock, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
-  const { isAuthenticated, login, loginWithGoogle, loading } = useAuth();
+  const { isAuthenticated, signIn, signInWithGoogle, loading } = useAuth();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +31,10 @@ export default function Login() {
     }
 
     try {
-      await login(email, password);
+      const { error } = await signIn(email, password);
+      if (error) {
+        setError(error.message || "Erreur de connexion. Veuillez réessayer.");
+      }
     } catch (err) {
       setError("Erreur de connexion. Veuillez réessayer.");
     }
@@ -40,7 +43,10 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setError("");
     try {
-      await loginWithGoogle();
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setError(error.message || "Erreur de connexion avec Google. Veuillez réessayer.");
+      }
     } catch (err) {
       setError("Erreur de connexion avec Google. Veuillez réessayer.");
     }
