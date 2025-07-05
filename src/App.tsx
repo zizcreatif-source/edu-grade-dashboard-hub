@@ -10,6 +10,8 @@ import { OfflineProvider } from "./contexts/OfflineContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
+import { ErrorBoundary } from "./components/error/ErrorBoundary";
+import { useKeyboardShortcuts } from "./hooks/use-keyboard-shortcuts";
 import Dashboard from "./pages/Dashboard";
 import Cours from "./pages/Cours";
 import Etudiants from "./pages/Etudiants";
@@ -18,66 +20,82 @@ import Parametres from "./pages/Parametres";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+function AppContent() {
+  useKeyboardShortcuts();
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/cours" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Cours />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/etudiants" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Etudiants />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/notes" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Notes />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/parametres" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Parametres />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <DataProvider>
-          <OfflineProvider>
-            <NotificationProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/" element={
-                      <ProtectedRoute>
-                        <AppLayout>
-                          <Dashboard />
-                        </AppLayout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/cours" element={
-                      <ProtectedRoute>
-                        <AppLayout>
-                          <Cours />
-                        </AppLayout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/etudiants" element={
-                      <ProtectedRoute>
-                        <AppLayout>
-                          <Etudiants />
-                        </AppLayout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/notes" element={
-                      <ProtectedRoute>
-                        <AppLayout>
-                          <Notes />
-                        </AppLayout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/parametres" element={
-                      <ProtectedRoute>
-                        <AppLayout>
-                          <Parametres />
-                        </AppLayout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </TooltipProvider>
-            </NotificationProvider>
-          </OfflineProvider>
-        </DataProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <DataProvider>
+            <OfflineProvider>
+              <NotificationProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <AppContent />
+                </TooltipProvider>
+              </NotificationProvider>
+            </OfflineProvider>
+          </DataProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

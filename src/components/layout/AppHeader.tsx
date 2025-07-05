@@ -2,6 +2,8 @@ import { Moon, Sun, User, Bell, LogOut } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { TooltipManager } from "@/components/ui/tooltip-manager";
+import { HelpSystem } from "@/components/help/HelpSystem";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,43 +34,51 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Help System */}
+          <HelpSystem />
+
           {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-9 w-9"
-            title={`Basculer vers le thème ${theme === 'light' ? 'sombre' : 'clair'}`}
+          <TooltipManager 
+            content={`Basculer vers le thème ${theme === 'light' ? 'sombre' : 'clair'}`}
+            shortcut="Alt+T"
           >
-            {theme === 'light' ? (
-              <Moon className="h-4 w-4" />
-            ) : (
-              <Sun className="h-4 w-4" />
-            )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-9 w-9"
+            >
+              {theme === 'light' ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipManager>
 
           {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 relative"
-            title="Notifications"
-          >
-            <Bell className="h-4 w-4" />
-            <div className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full flex items-center justify-center">
-              <span className="sr-only">3 notifications</span>
-              <div className="h-1.5 w-1.5 bg-destructive-foreground rounded-full"></div>
-            </div>
-          </Button>
+          <TooltipManager content="Notifications" shortcut="Alt+N">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 relative"
+            >
+              <Bell className="h-4 w-4" />
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full flex items-center justify-center">
+                <span className="sr-only">3 notifications</span>
+                <div className="h-1.5 w-1.5 bg-destructive-foreground rounded-full"></div>
+              </div>
+            </Button>
+          </TooltipManager>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="h-9 px-2 gap-2 hover:bg-accent"
-                title="Menu utilisateur"
-              >
+              <TooltipManager content="Menu utilisateur" shortcut="Alt+U">
+                <Button 
+                  variant="ghost" 
+                  className="h-9 px-2 gap-2 hover:bg-accent"
+                >
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={user?.avatar} alt={user?.name} />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-primary-glow text-primary-foreground text-xs">
@@ -79,7 +89,8 @@ export function AppHeader() {
                   <span className="text-sm font-medium">{user?.name}</span>
                   <span className="text-xs text-muted-foreground capitalize">{user?.role}</span>
                 </div>
-              </Button>
+                </Button>
+              </TooltipManager>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuLabel className="flex items-center gap-3 p-3">
