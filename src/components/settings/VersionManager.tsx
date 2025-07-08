@@ -28,7 +28,7 @@ export function VersionManager() {
     {
       version: '2.2.0',
       type: 'latest',
-      date: '2024-01-15',
+      date: new Date().toISOString().split('T')[0],
       size: '12.3 MB',
       changelog: [
         'Nouveau système d\'export Excel avancé',
@@ -41,36 +41,12 @@ export function VersionManager() {
     {
       version: '2.1.3',
       type: 'stable',
-      date: '2024-01-01',
+      date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       size: '11.8 MB',
       changelog: [
         'Version actuelle stable',
         'Toutes les fonctionnalités testées',
         'Performance optimisée'
-      ],
-      critical: false
-    },
-    {
-      version: '2.1.2',
-      type: 'stable',
-      date: '2023-12-15',
-      size: '11.5 MB',
-      changelog: [
-        'Corrections sécurité critiques',
-        'Amélioration gestion des groupes',
-        'Export CSV optimisé'
-      ],
-      critical: true
-    },
-    {
-      version: '2.0.1',
-      type: 'legacy',
-      date: '2023-11-30',
-      size: '10.2 MB',
-      changelog: [
-        'Version legacy stable',
-        'Support limité',
-        'Migration recommandée'
       ],
       critical: false
     }
@@ -133,11 +109,11 @@ export function VersionManager() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold">EduGrade v{currentVersion}</p>
-              <p className="text-sm text-muted-foreground">Installée le 1 janvier 2024</p>
+              <p className="text-sm text-muted-foreground">Installée le {new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')}</p>
             </div>
             <div className="text-right">
               <Badge className="bg-green-600 mb-2">Stable</Badge>
-              <p className="text-sm text-muted-foreground">Dernière vérification: Il y a 2h</p>
+              <p className="text-sm text-muted-foreground">Dernière vérification: {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
           </div>
         </CardContent>

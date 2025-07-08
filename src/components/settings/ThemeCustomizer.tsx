@@ -1,27 +1,42 @@
 import { useState } from 'react';
-import { Palette, Monitor, Sun, Moon, Smartphone } from 'lucide-react';
+import { Palette, Monitor, Sun, Moon, Smartphone, Brush, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeCustomizer() {
   const { theme, toggleTheme, setTheme } = useTheme();
-  const [selectedColor, setSelectedColor] = useState('#2563eb');
+  const [selectedColor, setSelectedColor] = useState('hsl(221.2 83.2% 53.3%)');
+  const [compactMode, setCompactMode] = useState(false);
+  const [reducedAnimations, setReducedAnimations] = useState(false);
+  const [collapsedSidebar, setCollapsedSidebar] = useState(false);
 
   const colorPresets = [
-    { name: 'Bleu', value: '#2563eb', class: 'bg-blue-600' },
-    { name: 'Vert', value: '#16a34a', class: 'bg-green-600' },
-    { name: 'Rouge', value: '#dc2626', class: 'bg-red-600' },
-    { name: 'Violet', value: '#7c3aed', class: 'bg-violet-600' },
-    { name: 'Orange', value: '#ea580c', class: 'bg-orange-600' },
-    { name: 'Rose', value: '#e11d48', class: 'bg-pink-600' },
+    { name: 'Bleu EduGrade', value: 'hsl(221.2 83.2% 53.3%)', hex: '#2563eb', gradient: 'from-blue-500 to-blue-600' },
+    { name: 'Vert Éducation', value: 'hsl(142.1 76.2% 36.3%)', hex: '#16a34a', gradient: 'from-green-500 to-green-600' },
+    { name: 'Violet Académique', value: 'hsl(262.1 83.3% 57.8%)', hex: '#7c3aed', gradient: 'from-violet-500 to-violet-600' },
+    { name: 'Orange Créatif', value: 'hsl(24.6 95% 53.1%)', hex: '#ea580c', gradient: 'from-orange-500 to-orange-600' },
+    { name: 'Rose Moderne', value: 'hsl(346.8 77.2% 49.8%)', hex: '#e11d48', gradient: 'from-pink-500 to-pink-600' },
+    { name: 'Bleu Marine', value: 'hsl(217.2 91.2% 59.8%)', hex: '#3b82f6', gradient: 'from-blue-600 to-blue-700' },
   ];
 
-  const applyColor = (color: string) => {
-    setSelectedColor(color);
-    // In a real app, you would update CSS variables
-    document.documentElement.style.setProperty('--primary', color);
+  const applyColor = (hslValue: string, hexValue: string) => {
+    setSelectedColor(hslValue);
+    // Update CSS variables with HSL values
+    document.documentElement.style.setProperty('--primary', hslValue);
+    document.documentElement.style.setProperty('--primary-foreground', 'hsl(210 40% 98%)');
+  };
+
+  const toggleCompactMode = () => {
+    setCompactMode(!compactMode);
+    document.documentElement.classList.toggle('compact-mode', !compactMode);
+  };
+
+  const toggleAnimations = () => {
+    setReducedAnimations(!reducedAnimations);
+    document.documentElement.classList.toggle('reduced-motion', !reducedAnimations);
   };
 
   return (
@@ -75,16 +90,24 @@ export function ThemeCustomizer() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-sm font-medium mb-3 block">Couleur principale</Label>
-            <div className="grid grid-cols-6 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               {colorPresets.map((color) => (
                 <button
                   key={color.value}
-                  onClick={() => applyColor(color.value)}
-                  className={`w-12 h-12 rounded-lg ${color.class} border-2 transition-all ${
-                    selectedColor === color.value ? 'border-foreground scale-110' : 'border-transparent'
+                  onClick={() => applyColor(color.value, color.hex)}
+                  className={`relative p-4 rounded-xl bg-gradient-to-r ${color.gradient} border-2 transition-all hover:scale-105 ${
+                    selectedColor === color.value ? 'border-foreground ring-2 ring-primary/20' : 'border-transparent'
                   }`}
                   title={color.name}
-                />
+                >
+                  <div className="text-white text-sm font-medium">{color.name}</div>
+                  <div className="text-white/80 text-xs">{color.hex}</div>
+                  {selectedColor === color.value && (
+                    <div className="absolute top-2 right-2">
+                      <Eye className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                </button>
               ))}
             </div>
           </div>
@@ -94,16 +117,21 @@ export function ThemeCustomizer() {
             <div className="flex gap-2">
               <input
                 type="color"
-                value={selectedColor}
-                onChange={(e) => applyColor(e.target.value)}
+                value={colorPresets.find(c => c.value === selectedColor)?.hex || '#2563eb'}
+                onChange={(e) => {
+                  const hexValue = e.target.value;
+                  // Convert hex to HSL for semantic tokens
+                  const hslValue = `hsl(from ${hexValue} h s l)`;
+                  applyColor(hslValue, hexValue);
+                }}
                 className="w-12 h-10 rounded border"
               />
               <input
                 type="text"
                 value={selectedColor}
-                onChange={(e) => applyColor(e.target.value)}
+                onChange={(e) => applyColor(e.target.value, e.target.value)}
                 className="flex-1 px-3 py-2 border rounded text-sm"
-                placeholder="#2563eb"
+                placeholder="hsl(221.2 83.2% 53.3%)"
               />
             </div>
           </div>
@@ -121,7 +149,7 @@ export function ThemeCustomizer() {
               <Label className="font-medium">Sidebar réduite par défaut</Label>
               <p className="text-sm text-muted-foreground">La barre latérale sera réduite au démarrage</p>
             </div>
-            <Button variant="outline" size="sm">Activer</Button>
+            <Switch checked={collapsedSidebar} onCheckedChange={setCollapsedSidebar} />
           </div>
           
           <div className="flex items-center justify-between">
@@ -129,7 +157,7 @@ export function ThemeCustomizer() {
               <Label className="font-medium">Mode compact</Label>
               <p className="text-sm text-muted-foreground">Interface plus dense avec moins d'espacement</p>
             </div>
-            <Button variant="outline" size="sm">Désactiver</Button>
+            <Switch checked={compactMode} onCheckedChange={toggleCompactMode} />
           </div>
           
           <div className="flex items-center justify-between">
@@ -137,7 +165,22 @@ export function ThemeCustomizer() {
               <Label className="font-medium">Animations réduites</Label>
               <p className="text-sm text-muted-foreground">Réduit les animations pour de meilleures performances</p>
             </div>
-            <Button variant="outline" size="sm">Activer</Button>
+            <Switch checked={reducedAnimations} onCheckedChange={toggleAnimations} />
+          </div>
+          
+          <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Brush className="h-4 w-4 text-primary" />
+              <Label className="font-medium text-primary">Aperçu du thème</Label>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Voici un aperçu de votre thème personnalisé avec les couleurs sélectionnées.
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm">Bouton principal</Button>
+              <Button variant="outline" size="sm">Bouton secondaire</Button>
+              <Button variant="ghost" size="sm">Bouton fantôme</Button>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -99,7 +99,10 @@ export function ExportManager() {
             case 'numero': return student.numero;
             case 'notes': {
               const studentNotes = notes.filter(n => n.etudiantId === student.id);
-              return studentNotes.map(n => `${n.evaluation}: ${n.note}`).join('; ');
+              return studentNotes.map(n => {
+                const noteStr = `${n.evaluation}: ${n.note}`;
+                return n.commentaire ? `${noteStr} (${n.commentaire})` : noteStr;
+              }).join('; ');
             }
             case 'moyennes': {
               const studentNotes = notes.filter(n => n.etudiantId === student.id);
@@ -133,6 +136,11 @@ export function ExportManager() {
       title: "Export réussi",
       description: `Les données ont été exportées avec succès.`,
     });
+    
+    // Force re-render to show button again
+    setTimeout(() => {
+      setSelectedEtablissement(selectedEtablissement);
+    }, 100);
   };
 
   const toggleColumn = (columnId: string) => {

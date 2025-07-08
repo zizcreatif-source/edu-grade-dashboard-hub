@@ -21,6 +21,7 @@ export function BrandingManager() {
       noteMin: 0,
       noteMax: 20,
       couleurPrimaire: '#2563eb',
+      logo: null as File | null,
     }
   });
 
@@ -37,9 +38,17 @@ export function BrandingManager() {
         });
         toast({ title: "Établissement modifié", description: "Les modifications ont été sauvegardées." });
       } else {
+        // Si un logo est uploadé, l'utiliser, sinon générer un avatar
+        let logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nom)}&background=${data.couleurPrimaire.slice(1)}&color=ffffff`;
+        
+        if (data.logo) {
+          // Créer une URL temporaire pour le fichier uploadé
+          logoUrl = URL.createObjectURL(data.logo);
+        }
+        
         addEtablissement({
           nom: data.nom,
-          logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nom)}&background=${data.couleurPrimaire.slice(1)}&color=ffffff`,
+          logo: logoUrl,
           configuration: {
             noteMin: data.noteMin,
             noteMax: data.noteMax,
@@ -100,11 +109,31 @@ export function BrandingManager() {
                       </FormControl>
                     </FormItem>
                   )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="noteMin"
+                 />
+                 <FormField
+                   control={form.control}
+                   name="logo"
+                   render={({ field: { value, onChange, ...field } }) => (
+                     <FormItem>
+                       <FormLabel>Logo de l'université/institut</FormLabel>
+                       <FormControl>
+                         <Input
+                           {...field}
+                           type="file"
+                           accept="image/*"
+                           onChange={(e) => {
+                             const file = e.target.files?.[0];
+                             onChange(file);
+                           }}
+                         />
+                       </FormControl>
+                     </FormItem>
+                   )}
+                 />
+                 <div className="grid grid-cols-2 gap-4">
+                   <FormField
+                     control={form.control}
+                     name="noteMin"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Note minimum</FormLabel>

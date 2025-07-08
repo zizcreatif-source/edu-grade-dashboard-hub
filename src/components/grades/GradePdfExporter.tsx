@@ -132,16 +132,34 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
         pdf.text(noteText, xPosition, yPosition + 6);
         xPosition += colWidths[3];
         
-        // Appréciation
+        // Appréciation et commentaire
         let appreciation = '-';
+        const noteRecord = notes.find(n => 
+          n.etudiantId === student.id && 
+          n.coursId === coursId && 
+          n.evaluation === evaluation.nom
+        );
+        
         if (note !== null) {
           if (note >= 16) appreciation = 'Excellent';
           else if (note >= 14) appreciation = 'Bien';
           else if (note >= 12) appreciation = 'Assez bien';
           else if (note >= 10) appreciation = 'Passable';
           else appreciation = 'Insuffisant';
+          
+          // Ajouter le commentaire si présent
+          if (noteRecord?.commentaire) {
+            appreciation += ` - ${noteRecord.commentaire}`;
+          }
         }
-        pdf.text(appreciation, xPosition, yPosition + 6);
+        
+        // Utiliser une taille de police plus petite pour les commentaires longs
+        const maxLength = 30;
+        if (appreciation.length > maxLength) {
+          pdf.setFontSize(8);
+        }
+        pdf.text(appreciation.substring(0, 60), xPosition, yPosition + 6);
+        pdf.setFontSize(10); // Reset font size
         
         yPosition += rowHeight;
       });
