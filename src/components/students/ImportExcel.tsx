@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { createExcelTemplate } from '@/utils/createExcelTemplate';
 import * as XLSX from 'xlsx';
 
 interface ImportExcelProps {
@@ -93,9 +94,12 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
         }
         
         // Parse students data
-        const studentsData: ParsedStudent[] = rows
+        const studentsData: ParsedStudent[] = [];
+        const seenNumbers = new Set<string>();
+        
+        rows
           .filter(row => row && row.length > 0 && row.some(cell => cell !== undefined && cell !== ''))
-          .map((row, index) => {
+          .forEach((row, index) => {
             const nom = row[nomIndex]?.toString().trim() || '';
             const prenom = row[prenomIndex]?.toString().trim() || '';
             const numero = row[numeroIndex]?.toString().trim() || '';
@@ -109,9 +113,16 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
             if (!prenom) errors.push('Prénom manquant');
             if (!numero) errors.push('Numéro manquant');
             
-            // Check if student number already exists
+            // Check for duplicate numbers in the file
+            if (numero && seenNumbers.has(numero)) {
+              errors.push('Numéro dupliqué dans le fichier');
+            } else if (numero) {
+              seenNumbers.add(numero);
+            }
+            
+            // Check if student number already exists in database
             if (numero && etudiants.some(e => e.numero === numero)) {
-              errors.push('Numéro étudiant déjà existant');
+              errors.push('Numéro étudiant déjà existant en base');
             }
             
             // Check email format if provided
@@ -119,7 +130,12 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
               errors.push('Email invalide');
             }
             
-            return {
+            // Check for special characters in number
+            if (numero && !/^[a-zA-Z0-9-_]+$/.test(numero)) {
+              errors.push('Numéro étudiant invalide (caractères spéciaux)');
+            }
+            
+            studentsData.push({
               nom,
               prenom,
               numero,
@@ -127,7 +143,7 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
               email: email || undefined,
               valid: errors.length === 0,
               errors
-            };
+            });
           });
         
         console.log('Parsed students data:', studentsData);
@@ -255,8 +271,18 @@ export function ImportExcel({ onClose }: ImportExcelProps) {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Importez un fichier Excel (.xlsx ou .xls) contenant les colonnes suivantes :
-              <strong> Nom, Prénom, Numéro, Classe, Email</strong>
+              <div className="space-y-2">
+                <p>Importez un fichier Excel (.xlsx ou .xls) contenant les colonnes suivantes :</p>
+                <p><strong>Nom, Prénom, Numéro, Classe (optionnel), Email (optionnel)</strong></p>
+                <Button 
+                  onClick={createExcelTemplate}
+                  variant="outline"
+                  size="sm"
+                  className="inline-flex items-center gap-2"
+                >
+                  📥 Créer un modèle Excel
+                </Button>
+              </div>
             </AlertDescription>
           </Alert>
 

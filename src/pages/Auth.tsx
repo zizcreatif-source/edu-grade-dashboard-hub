@@ -91,18 +91,18 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Logo et titre */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-glow shadow-lg">
-              <GraduationCap className="h-8 w-8 text-primary-foreground" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow shadow-md">
+              <GraduationCap className="h-6 w-6 text-primary-foreground" />
             </div>
           </div>
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-              EduGrade
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-foreground">
+              Connexion
             </h1>
-            <p className="text-muted-foreground">
-              Votre plateforme de gestion pédagogique
+            <p className="text-sm text-muted-foreground">
+              Accédez à votre plateforme
             </p>
           </div>
         </div>
