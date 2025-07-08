@@ -91,13 +91,21 @@ export default function Notes() {
                   <SelectValue placeholder="Sélectionner un cours" />
                 </SelectTrigger>
                 <SelectContent>
-                  {cours.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.nom} - {course.classe}
-                    </SelectItem>
-                  ))}
+                  {cours.map((course) => {
+                    const studentsInClass = etudiants.filter(e => e.classe === course.classe).length;
+                    return (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.nom} - {course.classe} ({studentsInClass} étudiants)
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
+              {selectedCours && courseStudents.length === 0 && (
+                <p className="text-sm text-amber-600 mt-1">
+                  ⚠️ Aucun étudiant trouvé pour la classe de ce cours
+                </p>
+              )}
             </div>
 
             {selectedCours && (
