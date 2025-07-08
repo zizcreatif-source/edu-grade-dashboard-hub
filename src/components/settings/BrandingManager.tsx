@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useForm } from 'react-hook-form';
 import { useData } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function BrandingManager() {
   const { etablissements, addEtablissement, updateEtablissement, deleteEtablissement } = useData();
@@ -25,25 +26,42 @@ export function BrandingManager() {
     }
   });
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = async (data: any) => {
     try {
       if (editingId) {
         updateEtablissement(editingId, {
           nom: data.nom,
           configuration: {
             noteMin: data.noteMin,
-            noteMax: data.noteMax,
-            coefficients: { controle: 1, examen: 2, tp: 1.5, oral: 1 }
+            noteMax: data.noteMax
           }
         });
         toast({ title: "Établissement modifié", description: "Les modifications ont été sauvegardées." });
       } else {
-        // Si un logo est uploadé, l'utiliser, sinon générer un avatar
+        // Upload du logo vers Supabase storage si fourni
         let logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nom)}&background=${data.couleurPrimaire.slice(1)}&color=ffffff`;
         
         if (data.logo) {
-          // Créer une URL temporaire pour le fichier uploadé
-          logoUrl = URL.createObjectURL(data.logo);
+          try {
+            const fileExt = data.logo.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `etablissements/${fileName}`;
+            
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('profile-photos')
+              .upload(filePath, data.logo);
+              
+            if (uploadError) {
+              console.error('Upload error:', uploadError);
+            } else {
+              const { data: { publicUrl } } = supabase.storage
+                .from('profile-photos')
+                .getPublicUrl(filePath);
+              logoUrl = publicUrl;
+            }
+          } catch (error) {
+            console.error('Error uploading logo:', error);
+          }
         }
         
         addEtablissement({
@@ -51,8 +69,7 @@ export function BrandingManager() {
           logo: logoUrl,
           configuration: {
             noteMin: data.noteMin,
-            noteMax: data.noteMax,
-            coefficients: { controle: 1, examen: 2, tp: 1.5, oral: 1 }
+            noteMax: data.noteMax
           }
         });
         toast({ title: "Établissement créé", description: "Le nouvel établissement a été ajouté." });
@@ -209,12 +226,12 @@ export function BrandingManager() {
             <CardContent>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Coefficients:</span>
-                  <span>Contrôle: {etablissement.configuration.coefficients.controle}</span>
+                  <span>Créé le:</span>
+                  <span>{new Date().toLocaleDateString('fr-FR')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span></span>
-                  <span>Examen: {etablissement.configuration.coefficients.examen}</span>
+                  <span>Statut:</span>
+                  <span>Actif</span>
                 </div>
               </div>
             </CardContent>

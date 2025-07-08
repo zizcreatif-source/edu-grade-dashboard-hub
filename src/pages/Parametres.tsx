@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Download, Palette, Building2, FileText, History, Database, Globe } from 'lucide-react';
+import { Settings, Download, Palette, Building2, History, Database, Globe, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExportManager } from '@/components/settings/ExportManager';
@@ -8,7 +8,8 @@ import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { VersionManager } from '@/components/settings/VersionManager';
 import { DataManager } from '@/components/settings/DataManager';
 import { LandingPageManager } from '@/components/settings/LandingPageManager';
-import { TemplateManager } from '@/components/settings/TemplateManager';
+import { PromotionStats } from '@/components/settings/PromotionStats';
+
 
 export default function Parametres() {
   return (
@@ -36,9 +37,9 @@ export default function Parametres() {
             <Palette className="h-4 w-4" />
             Thèmes
           </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Templates
+          <TabsTrigger value="promotions" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Promotions
           </TabsTrigger>
           <TabsTrigger value="versions" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -66,16 +67,16 @@ export default function Parametres() {
           <ThemeCustomizer />
         </TabsContent>
 
+        <TabsContent value="promotions">
+          <PromotionStats />
+        </TabsContent>
+
         <TabsContent value="versions">
           <VersionManager />
         </TabsContent>
 
         <TabsContent value="data">
           <DataManager />
-        </TabsContent>
-
-        <TabsContent value="templates">
-          <TemplateManager />
         </TabsContent>
       </Tabs>
     </div>

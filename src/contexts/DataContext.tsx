@@ -10,7 +10,6 @@ export interface Etablissement {
   configuration: {
     noteMin: number;
     noteMax: number;
-    coefficients: Record<string, number>;
   };
 }
 
@@ -199,8 +198,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ? JSON.parse(data.configuration)
       : data.configuration || {
           noteMin: 0,
-          noteMax: 20,
-          coefficients: { controle: 1, examen: 2, tp: 1.5, oral: 1 }
+          noteMax: 20
         }
   });
 
@@ -316,8 +314,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nom: 'Mon Établissement',
         configuration: {
           noteMin: 0,
-          noteMax: 20,
-          coefficients: { controle: 1, examen: 2, tp: 1.5, oral: 1 }
+          noteMax: 20
         }
       });
     
