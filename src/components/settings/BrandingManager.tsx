@@ -31,17 +31,8 @@ export function BrandingManager() {
   const handleSubmit = async (data: any) => {
     try {
       if (editingId) {
-        updateEtablissement(editingId, {
-          nom: data.nom,
-          configuration: {
-            noteMin: data.noteMin,
-            noteMax: data.noteMax
-          }
-        });
-        toast({ title: "Établissement modifié", description: "Les modifications ont été sauvegardées." });
-      } else {
-        // Upload du logo vers Supabase storage si fourni
-        let logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nom)}&background=${data.couleurPrimaire.slice(1)}&color=ffffff`;
+        // Pour la modification, on gère aussi le logo
+        let logoUrl = etablissements.find(e => e.id === editingId)?.logo;
         
         if (data.logo) {
           try {
@@ -49,6 +40,7 @@ export function BrandingManager() {
             const fileName = `${Date.now()}.${fileExt}`;
             const filePath = `etablissements/${fileName}`;
             
+            console.log('Uploading logo to:', filePath);
             const { error: uploadError } = await supabase.storage
               .from('profile-photos')
               .upload(filePath, data.logo);
@@ -65,6 +57,7 @@ export function BrandingManager() {
                 .from('profile-photos')
                 .getPublicUrl(filePath);
               logoUrl = publicUrl;
+              console.log('Logo uploaded successfully:', logoUrl);
             }
           } catch (error) {
             console.error('Error uploading logo:', error);
@@ -76,6 +69,55 @@ export function BrandingManager() {
           }
         }
         
+        updateEtablissement(editingId, {
+          nom: data.nom,
+          logo: logoUrl,
+          configuration: {
+            noteMin: data.noteMin,
+            noteMax: data.noteMax
+          }
+        });
+        toast({ title: "Établissement modifié", description: "Les modifications ont été sauvegardées." });
+      } else {
+        // Upload du logo vers Supabase storage si fourni
+        let logoUrl = null; // Par défaut, pas de logo
+        
+        if (data.logo) {
+          try {
+            const fileExt = data.logo.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `etablissements/${fileName}`;
+            
+            console.log('Uploading logo to:', filePath);
+            const { error: uploadError } = await supabase.storage
+              .from('profile-photos')
+              .upload(filePath, data.logo);
+              
+            if (uploadError) {
+              console.error('Upload error:', uploadError);
+              toast({ 
+                title: "Erreur d'upload", 
+                description: "Impossible d'uploader le logo.", 
+                variant: "destructive" 
+              });
+            } else {
+              const { data: { publicUrl } } = supabase.storage
+                .from('profile-photos')
+                .getPublicUrl(filePath);
+              logoUrl = publicUrl;
+              console.log('Logo uploaded successfully:', logoUrl);
+            }
+          } catch (error) {
+            console.error('Error uploading logo:', error);
+            toast({ 
+              title: "Erreur", 
+              description: "Erreur lors de l'upload du logo.", 
+              variant: "destructive" 
+            });
+          }
+        }
+        
+        console.log('Creating etablissement with logo:', logoUrl);
         addEtablissement({
           nom: data.nom,
           logo: logoUrl,
