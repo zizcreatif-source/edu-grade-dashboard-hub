@@ -16,6 +16,8 @@ export function BrandingManager() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
   const form = useForm({
     defaultValues: {
       nom: '',
@@ -47,12 +49,17 @@ export function BrandingManager() {
             const fileName = `${Date.now()}.${fileExt}`;
             const filePath = `etablissements/${fileName}`;
             
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
               .from('profile-photos')
               .upload(filePath, data.logo);
               
             if (uploadError) {
               console.error('Upload error:', uploadError);
+              toast({ 
+                title: "Erreur d'upload", 
+                description: "Impossible d'uploader le logo.", 
+                variant: "destructive" 
+              });
             } else {
               const { data: { publicUrl } } = supabase.storage
                 .from('profile-photos')
@@ -61,6 +68,11 @@ export function BrandingManager() {
             }
           } catch (error) {
             console.error('Error uploading logo:', error);
+            toast({ 
+              title: "Erreur", 
+              description: "Erreur lors de l'upload du logo.", 
+              variant: "destructive" 
+            });
           }
         }
         
@@ -77,6 +89,7 @@ export function BrandingManager() {
       setShowForm(false);
       setEditingId(null);
       form.reset();
+      setLogoPreview(null);
     } catch (error) {
       toast({ title: "Erreur", description: "Impossible de sauvegarder.", variant: "destructive" });
     }
@@ -102,7 +115,11 @@ export function BrandingManager() {
         </div>
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingId(null); form.reset(); }}>
+            <Button onClick={() => { 
+              setEditingId(null); 
+              form.reset(); 
+              setLogoPreview(null);
+            }}>
               <Plus className="h-4 w-4 mr-2" />
               Nouvelle université/institut
             </Button>
@@ -134,15 +151,40 @@ export function BrandingManager() {
                      <FormItem>
                        <FormLabel>Logo de l'université/institut</FormLabel>
                        <FormControl>
-                         <Input
-                           {...field}
-                           type="file"
-                           accept="image/*"
-                           onChange={(e) => {
-                             const file = e.target.files?.[0];
-                             onChange(file);
-                           }}
-                         />
+                         <div className="space-y-3">
+                           <Input
+                             {...field}
+                             type="file"
+                             accept="image/*"
+                             onChange={(e) => {
+                               const file = e.target.files?.[0];
+                               if (file) {
+                                 const reader = new FileReader();
+                                 reader.onload = (e) => {
+                                   setLogoPreview(e.target?.result as string);
+                                 };
+                                 reader.readAsDataURL(file);
+                                 onChange(file);
+                               } else {
+                                 setLogoPreview(null);
+                                 onChange(null);
+                               }
+                             }}
+                           />
+                           {logoPreview && (
+                             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                               <img 
+                                 src={logoPreview} 
+                                 alt="Aperçu du logo" 
+                                 className="w-16 h-16 object-contain rounded border"
+                               />
+                               <div className="flex-1">
+                                 <p className="text-sm font-medium">Aperçu du logo</p>
+                                 <p className="text-xs text-muted-foreground">Ce logo sera utilisé dans les exports</p>
+                               </div>
+                             </div>
+                           )}
+                         </div>
                        </FormControl>
                      </FormItem>
                    )}

@@ -38,13 +38,27 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
       pdf.setFontSize(20);
       pdf.setFont('helvetica', 'bold');
       
-      // Si il y a un logo d'établissement
-      if (etablissement?.logo) {
+      // Si il y a un logo d'établissement et qu'il n'est pas l'avatar par défaut
+      if (etablissement?.logo && !etablissement.logo.includes('ui-avatars.com')) {
         try {
-          // Convertir l'image en base64 si nécessaire
-          const imgData = etablissement.logo;
-          pdf.addImage(imgData, 'PNG', margin, yPosition, 30, 30);
-          yPosition += 35;
+          // Charger l'image et la convertir en base64
+          const response = await fetch(etablissement.logo);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          
+          await new Promise((resolve) => {
+            reader.onload = () => {
+              try {
+                const base64Data = reader.result as string;
+                pdf.addImage(base64Data, 'JPEG', margin, yPosition, 30, 30);
+                yPosition += 35;
+              } catch (error) {
+                console.log('Erreur lors de l\'ajout du logo au PDF:', error);
+              }
+              resolve(null);
+            };
+            reader.readAsDataURL(blob);
+          });
         } catch (error) {
           console.log('Logo non chargé, continuons sans');
         }
