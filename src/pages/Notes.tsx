@@ -11,12 +11,14 @@ import { GradeGrid } from '@/components/grades/GradeGrid';
 import { EvaluationForm } from '@/components/grades/EvaluationForm';
 import { ClassStats } from '@/components/grades/ClassStats';
 import { GradeHistory } from '@/components/grades/GradeHistory';
+import { QuickGradingInterface } from '@/components/grades/QuickGradingInterface';
+import { GradePdfExporter } from '@/components/grades/GradePdfExporter';
 
 export default function Notes() {
   const { cours, evaluations, etudiants, notes } = useData();
   const [selectedCours, setSelectedCours] = useState<string>('');
   const [selectedEvaluation, setSelectedEvaluation] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'grid' | 'stats' | 'history'>('grid');
+  const [viewMode, setViewMode] = useState<'quick' | 'grid' | 'export' | 'stats'>('quick');
   const [showEvaluationForm, setShowEvaluationForm] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
 
@@ -187,11 +189,20 @@ export default function Notes() {
       {/* Main Content */}
       {selectedCours ? (
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as any)}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="grid">Saisie des notes</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="quick">Notation rapide</TabsTrigger>
+            <TabsTrigger value="grid">Saisie avancée</TabsTrigger>
+            <TabsTrigger value="export">Export PDF</TabsTrigger>
             <TabsTrigger value="stats">Statistiques</TabsTrigger>
-            <TabsTrigger value="history">Historique</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="quick" className="space-y-4">
+            <QuickGradingInterface 
+              coursId={selectedCours}
+              students={courseStudents}
+              evaluations={courseEvaluations}
+            />
+          </TabsContent>
 
           <TabsContent value="grid" className="space-y-4">
             {selectedEvaluation ? (
@@ -240,15 +251,19 @@ export default function Notes() {
             )}
           </TabsContent>
 
+          <TabsContent value="export" className="space-y-4">
+            <GradePdfExporter 
+              coursId={selectedCours}
+              evaluationId={selectedEvaluation}
+              students={courseStudents}
+            />
+          </TabsContent>
+
           <TabsContent value="stats">
             <ClassStats 
               coursId={selectedCours}
               evaluationId={selectedEvaluation}
             />
-          </TabsContent>
-
-          <TabsContent value="history">
-            <GradeHistory coursId={selectedCours} />
           </TabsContent>
         </Tabs>
       ) : (
