@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { User, Mail, Calendar, Shield, Camera, Save, Eye, EyeOff } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { User, Mail, Calendar, Shield, Camera, Save, Eye, EyeOff, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,14 +24,51 @@ export function UserProfile({ onClose }: UserProfileProps) {
   const [formData, setFormData] = useState({
     display_name: profile?.display_name || '',
     avatar_url: profile?.avatar_url || '',
-    bio: '',
   });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [passwords, setPasswords] = useState({
     current: '',
     new: '',
     confirm: ''
   });
   const [loading, setLoading] = useState(false);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, avatar_url: urlData.publicUrl }));
+      
+      toast({
+        title: "Image uploadée",
+        description: "Votre photo de profil a été mise à jour.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'upload",
+        description: "Impossible d'uploader l'image.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -127,13 +164,28 @@ export function UserProfile({ onClose }: UserProfileProps) {
                 </AvatarFallback>
               </Avatar>
               {isEditing && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </>
               )}
             </div>
             
@@ -150,13 +202,32 @@ export function UserProfile({ onClose }: UserProfileProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="avatar_url">URL de l'avatar</Label>
-                    <Input
-                      id="avatar_url"
-                      value={formData.avatar_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
-                      placeholder="https://example.com/avatar.jpg"
-                    />
+                    <Label>Photo de profil</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex-1"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploading ? 'Upload en cours...' : 'Choisir une image'}
+                      </Button>
+                      {formData.avatar_url && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setFormData(prev => ({ ...prev, avatar_url: '' }))}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    {formData.avatar_url && (
+                      <p className="text-sm text-muted-foreground">Image actuelle sélectionnée</p>
+                    )}
                   </div>
                 </div>
               ) : (

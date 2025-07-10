@@ -2,7 +2,6 @@ import { Moon, Sun, User, Bell, LogOut } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { TooltipManager } from "@/components/ui/tooltip-manager";
 import { HelpSystem } from "@/components/help/HelpSystem";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { UserProfile } from "@/components/profile/UserProfile";
@@ -32,6 +31,17 @@ export function AppHeader() {
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const handleDialogChange = (isOpen: boolean, setterFunction: (value: boolean) => void) => {
+    setterFunction(isOpen);
+    if (!isOpen) {
+      // Small delay to prevent immediate reopening
+      setTimeout(() => {
+        setShowProfile(false);
+        setShowNotifications(false);
+      }, 100);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-2 sm:px-4">
@@ -50,26 +60,39 @@ export function AppHeader() {
           <HelpSystem />
 
           {/* Theme Toggle */}
-          <TooltipManager 
-            content={`Basculer vers le thème ${theme === 'light' ? 'sombre' : 'clair'}`}
-            shortcut="Alt+T"
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9"
+            title={`Basculer vers le thème ${theme === 'light' ? 'sombre' : 'clair'}`}
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="h-9 w-9"
-            >
-              {theme === 'light' ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
-            </Button>
-          </TooltipManager>
+            {theme === 'light' ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Sun className="h-4 w-4" />
+            )}
+          </Button>
 
           {/* Notifications */}
-          <NotificationCenter />
+          <Dialog open={showNotifications} onOpenChange={(isOpen) => handleDialogChange(isOpen, setShowNotifications)}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                title="Notifications"
+              >
+                <Bell className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Centre de notifications</DialogTitle>
+              </DialogHeader>
+              <NotificationCenter />
+            </DialogContent>
+          </Dialog>
 
           {/* User Menu */}
           <DropdownMenu>
@@ -107,34 +130,33 @@ export function AppHeader() {
                  </div>
                </DropdownMenuLabel>
               <DropdownMenuSeparator />
-               <Dialog open={showProfile} onOpenChange={setShowProfile}>
+               <Dialog open={showProfile} onOpenChange={(isOpen) => handleDialogChange(isOpen, setShowProfile)}>
                  <DialogTrigger asChild>
-                   <DropdownMenuItem className="gap-2 cursor-pointer">
+                   <DropdownMenuItem 
+                     className="gap-2 cursor-pointer"
+                     onSelect={(e) => {
+                       e.preventDefault();
+                       setShowProfile(true);
+                     }}
+                   >
                      <User className="h-4 w-4" />
                      <span>Profil</span>
                    </DropdownMenuItem>
                  </DialogTrigger>
-                 <DialogContent className="max-w-2xl">
+                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
                    <DialogHeader>
                      <DialogTitle>Profil utilisateur</DialogTitle>
                    </DialogHeader>
                    <UserProfile onClose={() => setShowProfile(false)} />
                  </DialogContent>
                </Dialog>
-               <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
-                 <DialogTrigger asChild>
-                   <DropdownMenuItem className="gap-2 cursor-pointer">
-                     <Bell className="h-4 w-4" />
-                     <span>Notifications</span>
-                   </DropdownMenuItem>
-                 </DialogTrigger>
-                 <DialogContent className="max-w-2xl">
-                   <DialogHeader>
-                     <DialogTitle>Centre de notifications</DialogTitle>
-                   </DialogHeader>
-                   <NotificationCenter />
-                 </DialogContent>
-               </Dialog>
+               <DropdownMenuItem 
+                 className="gap-2 cursor-pointer"
+                 onClick={() => setShowNotifications(true)}
+               >
+                 <Bell className="h-4 w-4" />
+                 <span>Notifications</span>
+               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="gap-2 cursor-pointer text-destructive focus:text-destructive" 
