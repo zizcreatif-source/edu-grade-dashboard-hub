@@ -277,21 +277,22 @@ export function BrandingManager() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {etablissement.logo ? (
-                    <img 
-                      src={etablissement.logo} 
-                      alt={etablissement.nom}
-                      className="w-12 h-12 rounded-lg object-cover border"
-                      onError={(e) => {
-                        console.log('Logo failed to load:', etablissement.logo);
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null}
-                  <div className={`w-12 h-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg ${etablissement.logo ? 'hidden' : ''}`}>
-                    {etablissement.nom.split(' ').map(word => word.charAt(0)).join('').slice(0, 2).toUpperCase()}
+                  <div className="relative w-12 h-12">
+                    {etablissement.logo && (
+                      <img 
+                        src={etablissement.logo} 
+                        alt={etablissement.nom}
+                        className="w-12 h-12 rounded-lg object-cover border absolute inset-0"
+                        onError={(e) => {
+                          console.log('Logo failed to load:', etablissement.logo);
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="w-12 h-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
+                      {etablissement.nom.split(' ').map(word => word.charAt(0)).join('').slice(0, 2).toUpperCase()}
+                    </div>
                   </div>
                   <div>
                     <CardTitle className="text-lg">{etablissement.nom}</CardTitle>
