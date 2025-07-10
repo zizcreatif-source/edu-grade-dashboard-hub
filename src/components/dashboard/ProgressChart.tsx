@@ -55,9 +55,9 @@ export function ProgressChart() {
         ) : (
           cours.map((cours) => (
             <div key={cours.id} className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <div 
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: cours.couleur }}
@@ -69,7 +69,7 @@ export function ProgressChart() {
                     {cours.classe} • {cours.quantumHoraire}h/semaine
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <div className={`text-lg font-semibold ${getProgressColor(cours.progression)}`}>
                     {cours.progression}%
                   </div>

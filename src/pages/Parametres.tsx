@@ -20,30 +20,31 @@ export default function Parametres() {
       </div>
 
         <Tabs defaultValue="landing" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="landing" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            Landing
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
+          <TabsTrigger value="landing" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Landing</span>
           </TabsTrigger>
-          <TabsTrigger value="export" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Export
+          <TabsTrigger value="export" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Export</span>
           </TabsTrigger>
-          <TabsTrigger value="branding" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            Établissements
+          <TabsTrigger value="branding" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Établissements</span>
+            <span className="sm:hidden">Établis.</span>
           </TabsTrigger>
-          <TabsTrigger value="themes" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            Thèmes
+          <TabsTrigger value="themes" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Thèmes</span>
           </TabsTrigger>
-          <TabsTrigger value="versions" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Versions
+          <TabsTrigger value="versions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Versions</span>
           </TabsTrigger>
-          <TabsTrigger value="data" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            Données
+          <TabsTrigger value="data" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Database className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Données</span>
           </TabsTrigger>
         </TabsList>
 
