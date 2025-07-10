@@ -197,13 +197,33 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>Classe *</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Ex: Terminale S" 
+                     <Input 
+                      placeholder="Ex: L1 Informatique" 
                       {...field}
                       list="classes-list"
                     />
                   </FormControl>
                   <datalist id="classes-list">
+                    <option value="L1 Informatique" />
+                    <option value="L2 Informatique" />
+                    <option value="L3 Informatique" />
+                    <option value="M1 Informatique" />
+                    <option value="M2 Informatique" />
+                    <option value="L1 Mathématiques" />
+                    <option value="L2 Mathématiques" />
+                    <option value="L3 Mathématiques" />
+                    <option value="M1 Mathématiques" />
+                    <option value="M2 Mathématiques" />
+                    <option value="L1 Physique" />
+                    <option value="L2 Physique" />
+                    <option value="L3 Physique" />
+                    <option value="M1 Physique" />
+                    <option value="M2 Physique" />
+                    <option value="L1 Économie" />
+                    <option value="L2 Économie" />
+                    <option value="L3 Économie" />
+                    <option value="M1 Économie" />
+                    <option value="M2 Économie" />
                     {existingClasses.map((classe) => (
                       <option key={classe} value={classe} />
                     ))}

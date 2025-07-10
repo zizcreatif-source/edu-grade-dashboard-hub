@@ -168,7 +168,7 @@ export function CourseForm({ coursId, onClose }: CourseFormProps) {
                 <FormItem>
                   <FormLabel>Classe *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Terminale S" {...field} />
+                    <Input placeholder="Ex: L3 Informatique" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
