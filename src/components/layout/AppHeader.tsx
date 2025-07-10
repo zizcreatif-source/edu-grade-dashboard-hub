@@ -74,23 +74,21 @@ export function AppHeader() {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <TooltipManager content="Menu utilisateur" shortcut="Alt+U">
-                <Button 
-                  variant="ghost" 
-                  className="h-9 px-2 gap-2 hover:bg-accent"
-                >
-                 <Avatar className="h-7 w-7">
-                   <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || user?.email} />
-                   <AvatarFallback className="bg-gradient-to-br from-primary to-primary-glow text-primary-foreground text-xs">
-                     {profile?.display_name?.split(' ').map(n => n[0]).join('').toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
-                   </AvatarFallback>
-                 </Avatar>
-                 <div className="hidden md:flex flex-col items-start">
-                   <span className="text-sm font-medium">{profile?.display_name || user?.email}</span>
-                   <span className="text-xs text-muted-foreground capitalize">{profile?.role}</span>
-                 </div>
-                </Button>
-              </TooltipManager>
+              <Button 
+                variant="ghost" 
+                className="h-9 px-2 gap-2 hover:bg-accent"
+              >
+               <Avatar className="h-7 w-7">
+                 <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || user?.email} />
+                 <AvatarFallback className="bg-gradient-to-br from-primary to-primary-glow text-primary-foreground text-xs">
+                   {profile?.display_name?.split(' ').map(n => n[0]).join('').toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                 </AvatarFallback>
+               </Avatar>
+               <div className="hidden md:flex flex-col items-start">
+                 <span className="text-sm font-medium">{profile?.display_name || user?.email}</span>
+                 <span className="text-xs text-muted-foreground capitalize">{profile?.role}</span>
+               </div>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
                <DropdownMenuLabel className="flex items-center gap-3 p-3">
