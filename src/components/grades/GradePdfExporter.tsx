@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileDown, School, Calendar, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useData, Etudiant, Evaluation, Cours } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
 
 interface GradePdfExporterProps {
@@ -20,10 +21,32 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
   const { user } = useAuth();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [professorName, setProfessorName] = useState<string>('Professeur');
 
   const evaluation = evaluations.find(e => e.id === evaluationId);
   const course = cours.find(c => c.id === coursId);
   const etablissement = etablissements[0]; // Premier établissement
+
+  // Récupérer le nom du professeur depuis la table profiles
+  useEffect(() => {
+    const fetchProfessorName = async () => {
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.display_name) {
+          setProfessorName(profile.display_name);
+        } else {
+          setProfessorName(user.email || 'Professeur');
+        }
+      }
+    };
+    
+    fetchProfessorName();
+  }, [user]);
 
   const generatePDF = async () => {
     if (!evaluation || !course) return;
@@ -82,7 +105,6 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
       yPosition += 6;
       
       // Ajouter le nom du professeur
-      const professorName = user?.user_metadata?.display_name || user?.email || 'Professeur';
       pdf.text(`Professeur: ${professorName}`, pageWidth / 2, yPosition, { align: 'center' });
       yPosition += 15;
 
