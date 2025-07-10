@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useData, Etudiant, Evaluation, Cours } from '@/contexts/DataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 
@@ -16,6 +17,7 @@ interface GradePdfExporterProps {
 
 export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfExporterProps) {
   const { notes, evaluations, cours, etablissements } = useData();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -77,7 +79,12 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
       pdf.text(`Évaluation: ${evaluation.nom} (${evaluation.type})`, pageWidth / 2, yPosition, { align: 'center' });
       yPosition += 6;
       pdf.text(`Classe: ${course.classe} - Date: ${new Date(evaluation.date).toLocaleDateString('fr-FR')}`, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 20;
+      yPosition += 6;
+      
+      // Ajouter le nom du professeur
+      const professorName = user?.user_metadata?.display_name || user?.email || 'Professeur';
+      pdf.text(`Professeur: ${professorName}`, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 15;
 
       // Tableau des notes
       const tableHeaders = ['N°', 'Nom', 'Prénom', 'Note /20', 'Appréciation'];
