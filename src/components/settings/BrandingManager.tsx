@@ -277,20 +277,20 @@ export function BrandingManager() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="relative w-12 h-12">
-                    {etablissement.logo && (
+                  <div className="relative w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    {etablissement.logo ? (
                       <img 
                         src={etablissement.logo} 
                         alt={etablissement.nom}
-                        className="w-12 h-12 rounded-lg object-cover border absolute inset-0"
+                        className="w-full h-full rounded-lg object-cover"
                         onError={(e) => {
                           console.log('Logo failed to load:', etablissement.logo);
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
                         }}
                       />
-                    )}
-                    <div className="w-12 h-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
+                    ) : null}
+                    <div className={`${etablissement.logo ? 'absolute inset-0 bg-primary/90' : 'w-full h-full bg-primary'} rounded-lg flex items-center justify-center font-bold text-lg text-primary-foreground`}>
                       {etablissement.nom.split(' ').map(word => word.charAt(0)).join('').slice(0, 2).toUpperCase()}
                     </div>
                   </div>

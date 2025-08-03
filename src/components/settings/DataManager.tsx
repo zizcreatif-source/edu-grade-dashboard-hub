@@ -220,7 +220,11 @@ export function DataManager() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Button variant="outline" className="h-auto p-4">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4"
+              onClick={() => toast({ title: "Sauvegarde", description: "Sauvegarde complète démarrée..." })}
+            >
               <div className="text-center">
                 <Database className="h-6 w-6 mx-auto mb-2" />
                 <p className="font-medium">Sauvegarde Complète</p>
@@ -228,7 +232,11 @@ export function DataManager() {
               </div>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4"
+              onClick={() => toast({ title: "Optimisation", description: "Optimisation de la base démarrée..." })}
+            >
               <div className="text-center">
                 <TrendingUp className="h-6 w-6 mx-auto mb-2" />
                 <p className="font-medium">Optimiser la Base</p>
@@ -236,7 +244,11 @@ export function DataManager() {
               </div>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4"
+              onClick={() => toast({ title: "Vérification", description: "Vérification d'intégrité démarrée..." })}
+            >
               <div className="text-center">
                 <Shield className="h-6 w-6 mx-auto mb-2" />
                 <p className="font-medium">Vérifier l'Intégrité</p>

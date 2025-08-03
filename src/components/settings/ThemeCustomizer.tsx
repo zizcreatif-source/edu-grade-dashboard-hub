@@ -24,9 +24,15 @@ export function ThemeCustomizer() {
 
   const applyColor = (hslValue: string, hexValue: string) => {
     setSelectedColor(hslValue);
-    // Update CSS variables with HSL values
-    document.documentElement.style.setProperty('--primary', hslValue);
-    document.documentElement.style.setProperty('--primary-foreground', 'hsl(210 40% 98%)');
+    // Extract HSL values from the string and apply them properly
+    const hslMatch = hslValue.match(/hsl\(([^)]+)\)/);
+    if (hslMatch) {
+      const hslParts = hslMatch[1].split(/\s+/);
+      if (hslParts.length >= 3) {
+        document.documentElement.style.setProperty('--primary', `${hslParts[0]} ${hslParts[1]} ${hslParts[2]}`);
+      }
+    }
+    document.documentElement.style.setProperty('--primary-foreground', '210 40% 98%');
   };
 
   const toggleCompactMode = () => {
@@ -120,8 +126,28 @@ export function ThemeCustomizer() {
                 value={colorPresets.find(c => c.value === selectedColor)?.hex || '#2563eb'}
                 onChange={(e) => {
                   const hexValue = e.target.value;
-                  // Convert hex to HSL for semantic tokens
-                  const hslValue = `hsl(from ${hexValue} h s l)`;
+                  // Convert hex to HSL manually for better compatibility
+                  const r = parseInt(hexValue.slice(1, 3), 16) / 255;
+                  const g = parseInt(hexValue.slice(3, 5), 16) / 255;
+                  const b = parseInt(hexValue.slice(5, 7), 16) / 255;
+                  
+                  const max = Math.max(r, g, b);
+                  const min = Math.min(r, g, b);
+                  const l = (max + min) / 2;
+                  
+                  let h = 0, s = 0;
+                  if (max !== min) {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                      case g: h = (b - r) / d + 2; break;
+                      case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                  }
+                  
+                  const hslValue = `hsl(${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%)`;
                   applyColor(hslValue, hexValue);
                 }}
                 className="w-12 h-10 rounded border"

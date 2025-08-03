@@ -87,9 +87,9 @@ export function VersionManager() {
   const getVersionBadge = (type: Version['type']) => {
     switch (type) {
       case 'latest':
-        return <Badge className="bg-blue-600">Dernière</Badge>;
+        return <Badge className="bg-primary text-primary-foreground">Dernière</Badge>;
       case 'stable':
-        return <Badge className="bg-green-600">Stable</Badge>;
+        return <Badge className="bg-green-600 text-white">Stable</Badge>;
       case 'legacy':
         return <Badge variant="outline">Legacy</Badge>;
     }
@@ -112,7 +112,7 @@ export function VersionManager() {
               <p className="text-sm text-muted-foreground">Installée le {new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')}</p>
             </div>
             <div className="text-right">
-              <Badge className="bg-green-600 mb-2">Stable</Badge>
+              <Badge className="bg-green-600 text-white mb-2">Stable</Badge>
               <p className="text-sm text-muted-foreground">Dernière vérification: {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
           </div>

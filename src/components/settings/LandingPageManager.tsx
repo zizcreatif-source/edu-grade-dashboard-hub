@@ -214,14 +214,14 @@ export function LandingPageManager() {
       const fileName = `${user.id}/profile-${Date.now()}.${fileExt}`;
       
       // Upload vers Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('profile-photos')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         });
 
-      if (error) throw error;
+      if (uploadError) throw uploadError;
 
       // Récupérer l'URL publique
       const { data: { publicUrl } } = supabase.storage
