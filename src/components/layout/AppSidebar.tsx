@@ -23,7 +23,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { SyncStatus } from "@/components/offline/SyncStatus";
-import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const navigationItems = [
   { 
@@ -105,7 +104,6 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex items-center gap-1">
               <SyncStatus />
-              <NotificationCenter />
             </div>
           )}
         </div>

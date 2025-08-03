@@ -31,15 +31,12 @@ export function AppHeader() {
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const handleDialogChange = (isOpen: boolean, setterFunction: (value: boolean) => void) => {
-    setterFunction(isOpen);
-    if (!isOpen) {
-      // Small delay to prevent immediate reopening
-      setTimeout(() => {
-        setShowProfile(false);
-        setShowNotifications(false);
-      }, 100);
-    }
+  const handleProfileDialogChange = (isOpen: boolean) => {
+    setShowProfile(isOpen);
+  };
+
+  const handleNotificationDialogChange = (isOpen: boolean) => {
+    setShowNotifications(isOpen);
   };
 
   return (
@@ -75,7 +72,7 @@ export function AppHeader() {
           </Button>
 
           {/* Notifications */}
-          <Dialog open={showNotifications} onOpenChange={(isOpen) => handleDialogChange(isOpen, setShowNotifications)}>
+          <Dialog open={showNotifications} onOpenChange={handleNotificationDialogChange}>
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
@@ -130,26 +127,26 @@ export function AppHeader() {
                  </div>
                </DropdownMenuLabel>
               <DropdownMenuSeparator />
-               <Dialog open={showProfile} onOpenChange={(isOpen) => handleDialogChange(isOpen, setShowProfile)}>
-                 <DialogTrigger asChild>
-                   <DropdownMenuItem 
-                     className="gap-2 cursor-pointer"
-                     onSelect={(e) => {
-                       e.preventDefault();
-                       setShowProfile(true);
-                     }}
-                   >
-                     <User className="h-4 w-4" />
-                     <span>Profil</span>
-                   </DropdownMenuItem>
-                 </DialogTrigger>
-                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-                   <DialogHeader>
-                     <DialogTitle>Profil utilisateur</DialogTitle>
-                   </DialogHeader>
-                   <UserProfile onClose={() => setShowProfile(false)} />
-                 </DialogContent>
-               </Dialog>
+                <Dialog open={showProfile} onOpenChange={handleProfileDialogChange}>
+                  <DialogTrigger asChild>
+                    <DropdownMenuItem 
+                      className="gap-2 cursor-pointer"
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setShowProfile(true);
+                      }}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Profil</span>
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+                    <DialogHeader>
+                      <DialogTitle>Profil utilisateur</DialogTitle>
+                    </DialogHeader>
+                    <UserProfile onClose={() => setShowProfile(false)} />
+                  </DialogContent>
+                </Dialog>
                <DropdownMenuItem 
                  className="gap-2 cursor-pointer"
                  onClick={() => setShowNotifications(true)}

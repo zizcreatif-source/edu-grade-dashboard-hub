@@ -38,10 +38,29 @@ export function UserProfile({ onClose }: UserProfileProps) {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
+    // Validation du fichier
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner un fichier image valide.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB max
+      toast({
+        title: "Erreur",
+        description: "L'image doit faire moins de 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('profile-photos')
@@ -60,6 +79,7 @@ export function UserProfile({ onClose }: UserProfileProps) {
         description: "Votre photo de profil a été mise à jour.",
       });
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Erreur d'upload",
         description: "Impossible d'uploader l'image.",
