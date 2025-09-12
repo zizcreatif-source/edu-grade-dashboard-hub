@@ -8,31 +8,56 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeCustomizer() {
   const { theme, toggleTheme, setTheme } = useTheme();
-  const [selectedColor, setSelectedColor] = useState('hsl(221.2 83.2% 53.3%)');
+  const [selectedColor, setSelectedColor] = useState('221.2 83.2% 53.3%');
   const [compactMode, setCompactMode] = useState(false);
   const [reducedAnimations, setReducedAnimations] = useState(false);
   const [collapsedSidebar, setCollapsedSidebar] = useState(false);
 
   const colorPresets = [
-    { name: 'Bleu EduGrade', value: 'hsl(221.2 83.2% 53.3%)', hex: '#2563eb', gradient: 'from-blue-500 to-blue-600' },
-    { name: 'Vert Éducation', value: 'hsl(142.1 76.2% 36.3%)', hex: '#16a34a', gradient: 'from-green-500 to-green-600' },
-    { name: 'Violet Académique', value: 'hsl(262.1 83.3% 57.8%)', hex: '#7c3aed', gradient: 'from-violet-500 to-violet-600' },
-    { name: 'Orange Créatif', value: 'hsl(24.6 95% 53.1%)', hex: '#ea580c', gradient: 'from-orange-500 to-orange-600' },
-    { name: 'Rose Moderne', value: 'hsl(346.8 77.2% 49.8%)', hex: '#e11d48', gradient: 'from-pink-500 to-pink-600' },
-    { name: 'Bleu Marine', value: 'hsl(217.2 91.2% 59.8%)', hex: '#3b82f6', gradient: 'from-blue-600 to-blue-700' },
+    { name: 'Bleu EduGrade', value: '221.2 83.2% 53.3%', hex: '#2563eb', gradient: 'from-blue-500 to-blue-600' },
+    { name: 'Vert Éducation', value: '142.1 76.2% 36.3%', hex: '#16a34a', gradient: 'from-green-500 to-green-600' },
+    { name: 'Violet Académique', value: '262.1 83.3% 57.8%', hex: '#7c3aed', gradient: 'from-violet-500 to-violet-600' },
+    { name: 'Orange Créatif', value: '24.6 95% 53.1%', hex: '#ea580c', gradient: 'from-orange-500 to-orange-600' },
+    { name: 'Rose Moderne', value: '346.8 77.2% 49.8%', hex: '#e11d48', gradient: 'from-pink-500 to-pink-600' },
+    { name: 'Bleu Marine', value: '217.2 91.2% 59.8%', hex: '#3b82f6', gradient: 'from-blue-600 to-blue-700' },
   ];
 
   const applyColor = (hslValue: string, hexValue: string) => {
     setSelectedColor(hslValue);
-    // Extract HSL values from the string and apply them properly
-    const hslMatch = hslValue.match(/hsl\(([^)]+)\)/);
-    if (hslMatch) {
-      const hslParts = hslMatch[1].split(/\s+/);
-      if (hslParts.length >= 3) {
-        document.documentElement.style.setProperty('--primary', `${hslParts[0]} ${hslParts[1]} ${hslParts[2]}`);
+    
+    // Extract HSL values and apply them properly
+    let hslParts: string[] = [];
+    
+    if (hslValue.startsWith('hsl(')) {
+      // Format: "hsl(221.2 83.2% 53.3%)"
+      const hslContent = hslValue.match(/hsl\(([^)]+)\)/)?.[1];
+      if (hslContent) {
+        hslParts = hslContent.split(/\s+/);
       }
+    } else if (hslValue.includes(' ')) {
+      // Format: "221.2 83.2% 53.3%"
+      hslParts = hslValue.split(/\s+/);
     }
-    document.documentElement.style.setProperty('--primary-foreground', '210 40% 98%');
+    
+    if (hslParts.length >= 3) {
+      // Clean the values (remove % signs)
+      const h = hslParts[0];
+      const s = hslParts[1].replace('%', '');
+      const l = hslParts[2].replace('%', '');
+      
+      document.documentElement.style.setProperty('--primary', `${h} ${s}% ${l}%`);
+      document.documentElement.style.setProperty('--primary-foreground', '210 40% 98%');
+      
+      // Update related primary colors
+      const hNum = parseFloat(h);
+      const sNum = parseFloat(s);
+      const lNum = parseFloat(l);
+      
+      // Create variants for hover states and accents
+      document.documentElement.style.setProperty('--primary-hover', `${hNum} ${sNum}% ${Math.max(lNum - 5, 0)}%`);
+      document.documentElement.style.setProperty('--accent', `${hNum} ${Math.max(sNum - 10, 0)}% ${Math.min(lNum + 10, 100)}%`);
+      document.documentElement.style.setProperty('--accent-foreground', `${hNum} ${sNum}% ${lNum}%`);
+    }
   };
 
   const toggleCompactMode = () => {
@@ -125,8 +150,8 @@ export function ThemeCustomizer() {
                 type="color"
                 value={colorPresets.find(c => c.value === selectedColor)?.hex || '#2563eb'}
                 onChange={(e) => {
-                  const hexValue = e.target.value;
                   // Convert hex to HSL manually for better compatibility
+                  const hexValue = e.target.value;
                   const r = parseInt(hexValue.slice(1, 3), 16) / 255;
                   const g = parseInt(hexValue.slice(3, 5), 16) / 255;
                   const b = parseInt(hexValue.slice(5, 7), 16) / 255;
@@ -147,7 +172,7 @@ export function ThemeCustomizer() {
                     h /= 6;
                   }
                   
-                  const hslValue = `hsl(${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%)`;
+                  const hslValue = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
                   applyColor(hslValue, hexValue);
                 }}
                 className="w-12 h-10 rounded border"
@@ -157,7 +182,7 @@ export function ThemeCustomizer() {
                 value={selectedColor}
                 onChange={(e) => applyColor(e.target.value, e.target.value)}
                 className="flex-1 px-3 py-2 border rounded text-sm"
-                placeholder="hsl(221.2 83.2% 53.3%)"
+                placeholder="221.2 83.2% 53.3%"
               />
             </div>
           </div>

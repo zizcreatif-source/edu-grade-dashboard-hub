@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Settings, Download, Palette, Building2, History, Database, Globe } from 'lucide-react';
+import { Settings, Palette, Building2, History, Database, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ExportManager } from '@/components/settings/ExportManager';
 import { BrandingManager } from '@/components/settings/BrandingManager';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { VersionManager } from '@/components/settings/VersionManager';
@@ -20,14 +19,10 @@ export default function Parametres() {
       </div>
 
         <Tabs defaultValue="landing" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
           <TabsTrigger value="landing" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
             <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Landing</span>
-          </TabsTrigger>
-          <TabsTrigger value="export" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">Export</span>
           </TabsTrigger>
           <TabsTrigger value="branding" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
             <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -50,10 +45,6 @@ export default function Parametres() {
 
         <TabsContent value="landing">
           <LandingPageManager />
-        </TabsContent>
-
-        <TabsContent value="export">
-          <ExportManager />
         </TabsContent>
 
         <TabsContent value="branding">
