@@ -25,7 +25,7 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
 
   const evaluation = evaluations.find(e => e.id === evaluationId);
   const course = cours.find(c => c.id === coursId);
-  const etablissement = etablissements[0]; // Premier établissement
+  const etablissement = etablissements.find(e => e.id === course?.etablissementId) || etablissements[0]; // Établissement du cours ou premier établissement
 
   // Récupérer le nom du professeur depuis la table profiles
   useEffect(() => {

@@ -182,7 +182,27 @@ export function ExportManager() {
                     {etablissements.map((etablissement) => (
                       <SelectItem key={etablissement.id} value={etablissement.id}>
                         <div className="flex items-center gap-2">
-                          <img src={etablissement.logo} alt="" className="w-4 h-4 rounded" />
+                          <div className="relative w-4 h-4 bg-primary/10 rounded flex items-center justify-center text-xs font-semibold overflow-hidden">
+                            {etablissement.logo ? (
+                              <img 
+                                src={etablissement.logo} 
+                                alt="" 
+                                className="w-full h-full rounded object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    const fallback = parent.querySelector('.select-fallback') as HTMLElement;
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                            ) : null}
+                            <div className={`select-fallback ${etablissement.logo ? 'hidden' : 'flex'} absolute inset-0 bg-primary rounded items-center justify-center text-primary-foreground`}>
+                              {etablissement.nom.split(' ').map(word => word.charAt(0)).join('').slice(0, 2).toUpperCase()}
+                            </div>
+                          </div>
                           {etablissement.nom}
                         </div>
                       </SelectItem>
