@@ -13,8 +13,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <AppHeader />
-          <main className="flex-1 p-3 sm:p-6">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 p-2 sm:p-4 lg:p-6">
+            <div className="max-w-7xl mx-auto w-full">
               {children}
             </div>
           </main>

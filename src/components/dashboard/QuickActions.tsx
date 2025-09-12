@@ -60,20 +60,24 @@ export function QuickActions() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
               <Button
                 key={action.title}
                 variant="outline"
-                className={`h-auto p-4 flex flex-col items-center gap-2 hover:shadow-md transition-all duration-200 ${action.color} border-0 text-white`}
+                className={`h-auto p-3 flex flex-col items-center gap-2 hover:shadow-md transition-all duration-200 ${action.color} border-0 text-white min-h-[80px] justify-center`}
                 onClick={action.onClick}
               >
-                <Icon className="h-5 w-5" />
-                <div className="text-center">
-                  <div className="font-medium text-sm">{action.title}</div>
-                  <div className="text-xs opacity-90 mt-1">{action.description}</div>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <div className="text-center space-y-1 min-w-0 w-full">
+                  <div className="font-medium text-xs sm:text-sm leading-tight truncate">
+                    {action.title}
+                  </div>
+                  <div className="text-xs opacity-90 leading-tight line-clamp-2 hidden sm:block">
+                    {action.description}
+                  </div>
                 </div>
               </Button>
             );
