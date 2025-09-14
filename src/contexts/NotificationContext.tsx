@@ -194,32 +194,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, []);
 
-  // Simulate some automatic notifications
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Random progress alert (75% threshold simulation)
-      if (Math.random() < 0.1 && settings.enableProgressAlerts) {
-        addNotification({
-          title: 'Progression importante',
-          message: 'Le cours de Mathématiques a atteint 75% de progression',
-          type: 'warning',
-          category: 'progression',
-        });
-      }
-      
-      // Random evaluation reminder
-      if (Math.random() < 0.05 && settings.enableEvaluationReminders) {
-        addNotification({
-          title: 'Évaluation prochaine',
-          message: 'Contrôle de Physique prévu demain à 14h',
-          type: 'info',
-          category: 'evaluation',
-        });
-      }
-    }, 30000); // Check every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [settings]);
+  // Real notifications will be triggered by actual app events
+  // No automatic fake notifications
 
   const value = {
     notifications,

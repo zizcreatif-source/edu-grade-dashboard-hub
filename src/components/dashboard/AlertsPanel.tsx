@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Clock, Calendar, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
 import { useData } from "@/contexts/DataContext";
 
 export function AlertsPanel() {
@@ -41,29 +41,8 @@ export function AlertsPanel() {
     }))
   ];
 
-  // Notifications simulées
-  const notifications = [
-    {
-      id: 'notif-1',
-      type: 'success' as const,
-      icon: CheckCircle2,
-      title: 'Notes saisies',
-      message: '15 nouvelles notes ont été ajoutées aujourd\'hui',
-      badge: 'Terminé',
-      time: 'Il y a 2h'
-    },
-    {
-      id: 'notif-2', 
-      type: 'info' as const,
-      icon: TrendingUp,
-      title: 'Statistiques',
-      message: 'La moyenne générale a augmenté de 0.8 points ce mois-ci',
-      badge: 'Analyse',
-      time: 'Il y a 1 jour'
-    }
-  ];
-
-  const allItems = [...alerts, ...notifications];
+  // Only show real alerts based on actual data
+  const allItems = alerts;
 
   return (
     <Card>
@@ -108,18 +87,11 @@ export function AlertsPanel() {
                           variant="outline" 
                           className={`text-xs ${
                             item.type === 'warning' ? 'border-warning text-warning' :
-                            item.type === 'success' ? 'border-success text-success' :
                             'border-info text-info'
                           }`}
                         >
                           {item.badge}
                         </Badge>
-                        {'time' in item && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {item.time}
-                          </span>
-                        )}
                       </div>
                     </div>
                     <AlertDescription className="text-sm">
