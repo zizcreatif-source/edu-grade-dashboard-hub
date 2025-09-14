@@ -196,7 +196,8 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
       )}
 
       {/* Grade Grid */}
-      <Card>
+      <div data-grade-grid="true">
+        <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Grille de saisie</CardTitle>
@@ -205,7 +206,7 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
                 {autoSave ? "Sauvegarde auto" : "Sauvegarde manuelle"}
               </Badge>
               {!autoSave && (
-                <Button onClick={saveAllGrades} size="sm">
+                <Button onClick={saveAllGrades} size="sm" data-save-all="true">
                   <Save className="h-4 w-4 mr-2" />
                   Tout sauvegarder
                 </Button>
@@ -326,6 +327,7 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

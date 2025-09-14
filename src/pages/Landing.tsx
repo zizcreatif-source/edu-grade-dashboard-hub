@@ -123,11 +123,8 @@ export default function Landing() {
             )}
           </Button>
 
-          {/* Center - Logo */}
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">EduGrade</span>
-          </div>
+          {/* Center - Empty space for layout */}
+          <div></div>
           
           {/* Right side - Dashboard/Auth button */}
           {isAuthenticated ? (
@@ -259,10 +256,6 @@ export default function Landing() {
       {/* Footer */}
       <footer className="bg-muted/50 py-12 px-4 mt-20">
         <div className="container mx-auto max-w-4xl text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold">EduGrade</span>
-          </div>
           <p className="text-muted-foreground mb-4">
             Plateforme de gestion pédagogique personnalisée
           </p>

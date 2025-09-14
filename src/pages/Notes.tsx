@@ -225,13 +225,29 @@ export default function Notes() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const gradeGrid = document.querySelector('[data-grade-grid="true"]');
+                        if (gradeGrid) {
+                          const saveAllButton = gradeGrid.querySelector('button[data-save-all="true"]');
+                          if (saveAllButton) {
+                            (saveAllButton as HTMLButtonElement).click();
+                          }
+                        }
+                      }}
+                    >
                       <Save className="h-4 w-4 mr-2" />
-                      Sauvegarder
+                      Sauvegarder tout
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Lock className="h-4 w-4 mr-2" />
-                      Verrouiller
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setAutoSave(!autoSave)}
+                    >
+                      {autoSave ? <Lock className="h-4 w-4 mr-2" /> : <Unlock className="h-4 w-4 mr-2" />}
+                      {autoSave ? 'Verrouiller' : 'Déverrouiller'}
                     </Button>
                   </div>
                 </div>
