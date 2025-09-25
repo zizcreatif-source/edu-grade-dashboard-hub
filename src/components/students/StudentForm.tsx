@@ -27,7 +27,7 @@ interface StudentFormProps {
 }
 
 export function StudentForm({ studentId, onClose }: StudentFormProps) {
-  const { etudiants, etablissements, addEtudiant, updateEtudiant } = useData();
+  const { etudiants, etablissements, cours, addEtudiant, updateEtudiant } = useData();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -113,8 +113,10 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
     }
   };
 
-  // Get unique classes from existing students
+  // Get unique classes from existing students and courses
   const existingClasses = [...new Set(etudiants.map(e => e.classe))].sort();
+  const coursClasses = [...new Set(cours.map(c => c.classe))].sort();
+  const allClasses = [...new Set([...existingClasses, ...coursClasses])].sort();
 
   return (
     <Form {...form}>
@@ -203,31 +205,11 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
                       list="classes-list"
                     />
                   </FormControl>
-                  <datalist id="classes-list">
-                    <option value="L1 Informatique" />
-                    <option value="L2 Informatique" />
-                    <option value="L3 Informatique" />
-                    <option value="M1 Informatique" />
-                    <option value="M2 Informatique" />
-                    <option value="L1 Mathématiques" />
-                    <option value="L2 Mathématiques" />
-                    <option value="L3 Mathématiques" />
-                    <option value="M1 Mathématiques" />
-                    <option value="M2 Mathématiques" />
-                    <option value="L1 Physique" />
-                    <option value="L2 Physique" />
-                    <option value="L3 Physique" />
-                    <option value="M1 Physique" />
-                    <option value="M2 Physique" />
-                    <option value="L1 Économie" />
-                    <option value="L2 Économie" />
-                    <option value="L3 Économie" />
-                    <option value="M1 Économie" />
-                    <option value="M2 Économie" />
-                    {existingClasses.map((classe) => (
-                      <option key={classe} value={classe} />
-                    ))}
-                  </datalist>
+                   <datalist id="classes-list">
+                     {allClasses.map((classe) => (
+                       <option key={classe} value={classe} />
+                     ))}
+                   </datalist>
                   <FormMessage />
                 </FormItem>
               )}
