@@ -65,6 +65,28 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
     }
   }, [studentId, etudiants, form]);
 
+  // Get selected values for conditional filtering
+  const selectedEtablissement = form.watch("etablissementId");
+  const selectedCours = form.watch("coursId");
+
+  // Reset cours and classe when etablissement changes
+  useEffect(() => {
+    if (selectedEtablissement) {
+      form.setValue("coursId", "");
+      form.setValue("classe", "");
+    }
+  }, [selectedEtablissement, form]);
+
+  // Reset classe when cours changes
+  useEffect(() => {
+    if (selectedCours) {
+      const coursData = cours.find(c => c.id === selectedCours);
+      if (coursData) {
+        form.setValue("classe", coursData.classe);
+      }
+    }
+  }, [selectedCours, cours, form]);
+
   const onSubmit = async (data: StudentFormData) => {
     setIsSubmitting(true);
     try {
@@ -120,6 +142,16 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
   const existingClasses = [...new Set(etudiants.map(e => e.classe))].sort();
   const coursClasses = [...new Set(cours.map(c => c.classe))].sort();
   const allClasses = [...new Set([...existingClasses, ...coursClasses])].sort();
+  
+  // Filter courses based on selected establishment
+  const filteredCours = selectedEtablissement 
+    ? cours.filter(c => c.etablissementId === selectedEtablissement)
+    : [];
+    
+  // Filter classes based on selected course
+  const filteredClasses = selectedCours
+    ? [cours.find(c => c.id === selectedCours)?.classe].filter(Boolean)
+    : allClasses;
 
   return (
     <Form {...form}>
@@ -208,7 +240,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {cours.map((cour) => (
+                      {filteredCours.map((cour) => (
                         <SelectItem key={cour.id} value={cour.id}>
                           {cour.nom}
                         </SelectItem>
@@ -233,7 +265,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {allClasses.map((classe) => (
+                      {filteredClasses.map((classe) => (
                         <SelectItem key={classe} value={classe}>
                           {classe}
                         </SelectItem>
