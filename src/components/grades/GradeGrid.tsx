@@ -87,7 +87,7 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
 
       if (existingNote) {
         updateNote(existingNote.id, noteData);
-      } else if (gradeData.note !== null) {
+      } else if (gradeData.note !== null || gradeData.commentaire) {
         addNote(noteData);
       }
 
@@ -250,11 +250,16 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
                         min="0"
                         max="20"
                         step="0.5"
-                        value={note || ''}
+                        value={note !== null ? note.toString() : ''}
                         onChange={(e) => {
-                          const value = e.target.value ? parseFloat(e.target.value) : null;
-                          if (value === null || (value >= 0 && value <= 20)) {
-                            updateGrade(student.id, 'note', value);
+                          const inputValue = e.target.value;
+                          if (inputValue === '') {
+                            updateGrade(student.id, 'note', null);
+                          } else {
+                            const value = parseFloat(inputValue);
+                            if (!isNaN(value) && value >= 0 && value <= 20) {
+                              updateGrade(student.id, 'note', value);
+                            }
                           }
                         }}
                         className={`text-center ${getGradeColor(note)}`}
