@@ -14,7 +14,8 @@ const studentSchema = z.object({
   prenom: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
   numero: z.string().min(1, 'Le numéro étudiant est requis'),
   etablissementId: z.string().min(1, 'Veuillez sélectionner un établissement'),
-  classe: z.string().min(1, 'Veuillez spécifier la classe'),
+  coursId: z.string().min(1, 'Veuillez sélectionner un cours'),
+  classe: z.string().min(1, 'Veuillez sélectionner une classe'),
   email: z.string().email('Email invalide').optional().or(z.literal('')),
   anneeScolaire: z.string().min(1, 'Veuillez spécifier l\'année scolaire'),
 });
@@ -38,6 +39,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
       prenom: '',
       numero: '',
       etablissementId: '',
+      coursId: '',
       classe: '',
       email: '',
       anneeScolaire: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
@@ -54,6 +56,7 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
           prenom: existingStudent.prenom,
           numero: existingStudent.numero,
           etablissementId: existingStudent.etablissementId,
+          coursId: '', // Les étudiants n'ont pas encore de coursId
           classe: existingStudent.classe,
           email: existingStudent.email || '',
           anneeScolaire: existingStudent.anneeScolaire,
@@ -194,22 +197,49 @@ export function StudentForm({ studentId, onClose }: StudentFormProps) {
 
             <FormField
               control={form.control}
+              name="coursId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cours *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un cours" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {cours.map((cour) => (
+                        <SelectItem key={cour.id} value={cour.id}>
+                          {cour.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="classe"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Classe *</FormLabel>
-                  <FormControl>
-                     <Input 
-                      placeholder="Ex: L1 Informatique" 
-                      {...field}
-                      list="classes-list"
-                    />
-                  </FormControl>
-                   <datalist id="classes-list">
-                     {allClasses.map((classe) => (
-                       <option key={classe} value={classe} />
-                     ))}
-                   </datalist>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une classe" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {allClasses.map((classe) => (
+                        <SelectItem key={classe} value={classe}>
+                          {classe}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
