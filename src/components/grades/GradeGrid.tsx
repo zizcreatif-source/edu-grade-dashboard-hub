@@ -58,11 +58,6 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
         ? { ...grade, [field]: value, saved: false }
         : grade
     ));
-
-    if (autoSave && field === 'commentaire') {
-      // Auto-save comments after 1 second delay
-      setTimeout(() => saveGrade(studentId), 1000);
-    }
   };
 
   const saveGrade = async (studentId: string) => {
@@ -312,7 +307,13 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
                           <Textarea
                             placeholder="Ajouter un commentaire..."
                             value={commentaire}
-                            onChange={(e) => updateGrade(student.id, 'commentaire', e.target.value)}
+                            onChange={(e) => {
+                              e.preventDefault();
+                              updateGrade(student.id, 'commentaire', e.target.value);
+                            }}
+                            onKeyDown={(e) => {
+                              e.stopPropagation();
+                            }}
                             rows={3}
                           />
                           <Button 
