@@ -29,6 +29,7 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
   const { toast } = useToast();
   const [gradesData, setGradesData] = useState<GradeData[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+  const [openPopover, setOpenPopover] = useState<string | null>(null);
 
   const evaluation = evaluations.find(e => e.id === evaluationId);
 
@@ -98,6 +99,9 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
           description: "La note a été enregistrée avec succès.",
         });
       }
+      
+      // Fermer le popover de commentaire après sauvegarde
+      setOpenPopover(null);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -291,7 +295,10 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
 
                   {/* Comment Button */}
                   <div className="col-span-2 flex justify-end gap-2">
-                    <Popover>
+                    <Popover 
+                      open={openPopover === student.id} 
+                      onOpenChange={(open) => setOpenPopover(open ? student.id : null)}
+                    >
                       <PopoverTrigger asChild>
                         <Button 
                           variant="ghost" 
