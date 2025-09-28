@@ -250,7 +250,7 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
                         min="0"
                         max="20"
                         step="0.5"
-                        value={note !== null ? note.toString() : ''}
+                        value={note != null ? note.toString() : ''}
                         onChange={(e) => {
                           const inputValue = e.target.value;
                           if (inputValue === '') {
