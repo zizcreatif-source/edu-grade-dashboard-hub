@@ -52,15 +52,15 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
     setGradesData(initialData);
   }, [students, notes, coursId, evaluation?.nom]);
 
-  const updateGrade = (studentId: string, field: 'note' | 'commentaire', value: number | string) => {
+  const updateGrade = (studentId: string, field: 'note' | 'commentaire', value: number | string | null) => {
     setGradesData(prev => prev.map(grade => 
       grade.studentId === studentId 
         ? { ...grade, [field]: value, saved: false }
         : grade
     ));
 
-    if (autoSave) {
-      // Auto-save after 1 second delay
+    if (autoSave && field === 'commentaire') {
+      // Auto-save comments after 1 second delay
       setTimeout(() => saveGrade(studentId), 1000);
     }
   };
@@ -256,9 +256,20 @@ export function GradeGrid({ coursId, evaluationId, students, autoSave }: GradeGr
                           if (inputValue === '') {
                             updateGrade(student.id, 'note', null);
                           } else {
+                            // Allow intermediate typing, store as string temporarily
                             const value = parseFloat(inputValue);
-                            if (!isNaN(value) && value >= 0 && value <= 20) {
+                            if (!isNaN(value)) {
                               updateGrade(student.id, 'note', value);
+                            }
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const inputValue = e.target.value;
+                          if (inputValue !== '') {
+                            const value = parseFloat(inputValue);
+                            if (isNaN(value) || value < 0 || value > 20) {
+                              // Reset to previous valid value or null
+                              updateGrade(student.id, 'note', note);
                             }
                           }
                         }}
