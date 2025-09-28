@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Users, User, Edit, Trash2 } from 'lucide-react';
+import { Plus, Users, User, Edit, Trash2, GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,10 @@ interface Group {
   studentIds: string[];
   leaderId?: string;
   classe: string;
+  etablissementId?: string;
+  coursId?: string;
+  parentGroupId?: string; // Pour les sous-groupes
+  type: 'main' | 'subgroup';
 }
 
 interface GroupManagerProps {
@@ -25,25 +29,45 @@ interface GroupManagerProps {
 }
 
 export function GroupManager({ onClose }: GroupManagerProps) {
-  const { etudiants } = useData();
+  const { etudiants, etablissements, cours } = useData();
   const { toast } = useToast();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedClasse, setSelectedClasse] = useState<string>('all');
+  const [selectedEtablissement, setSelectedEtablissement] = useState<string>('all');
+  const [selectedCours, setSelectedCours] = useState<string>('all');
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showCreateSubGroup, setShowCreateSubGroup] = useState(false);
+  const [parentGroupForSubGroup, setParentGroupForSubGroup] = useState<Group | null>(null);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [groupLeader, setGroupLeader] = useState<string>('');
+  const [newGroupEtablissement, setNewGroupEtablissement] = useState<string>('');
+  const [newGroupCours, setNewGroupCours] = useState<string>('');
 
   const classes = useMemo(() => {
     const allClasses = [...new Set(etudiants.map(e => e.classe))];
     return allClasses.sort();
   }, [etudiants]);
 
-  const filteredStudents = etudiants.filter(etudiant => 
-    selectedClasse === 'all' || etudiant.classe === selectedClasse
-  );
+  const filteredStudents = useMemo(() => {
+    return etudiants.filter(etudiant => {
+      const classeMatch = selectedClasse === 'all' || etudiant.classe === selectedClasse;
+      const etablissementMatch = selectedEtablissement === 'all' || etudiant.etablissementId === selectedEtablissement;
+      return classeMatch && etablissementMatch;
+    });
+  }, [etudiants, selectedClasse, selectedEtablissement]);
+
+  const availableStudentsForGroup = useMemo(() => {
+    if (showCreateSubGroup && parentGroupForSubGroup) {
+      // Pour un sous-groupe, seuls les étudiants du groupe parent sont disponibles
+      return filteredStudents.filter(etudiant => 
+        parentGroupForSubGroup.studentIds.includes(etudiant.id)
+      );
+    }
+    return filteredStudents;
+  }, [filteredStudents, showCreateSubGroup, parentGroupForSubGroup]);
 
   const getInitials = (nom: string, prenom: string) => {
     return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
@@ -72,13 +96,27 @@ export function GroupManager({ onClose }: GroupManagerProps) {
       return;
     }
 
+    // Vérifier la classe pour les groupes principaux
+    if (!showCreateSubGroup && selectedClasse === 'all') {
+      toast({
+        title: "Classe requise",
+        description: "Veuillez sélectionner une classe pour le groupe",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newGroup: Group = {
       id: Date.now().toString(),
       name: newGroupName,
       description: newGroupDescription,
       studentIds: selectedStudents,
       leaderId: groupLeader || undefined,
-      classe: selectedClasse
+      classe: showCreateSubGroup ? parentGroupForSubGroup!.classe : selectedClasse,
+      etablissementId: newGroupEtablissement || undefined,
+      coursId: newGroupCours || undefined,
+      parentGroupId: showCreateSubGroup ? parentGroupForSubGroup!.id : undefined,
+      type: showCreateSubGroup ? 'subgroup' : 'main'
     };
 
     setGroups([...groups, newGroup]);
@@ -88,11 +126,15 @@ export function GroupManager({ onClose }: GroupManagerProps) {
     setNewGroupDescription('');
     setSelectedStudents([]);
     setGroupLeader('');
+    setNewGroupEtablissement('');
+    setNewGroupCours('');
     setShowCreateGroup(false);
+    setShowCreateSubGroup(false);
+    setParentGroupForSubGroup(null);
 
     toast({
-      title: "Groupe créé",
-      description: `Le groupe "${newGroupName}" a été créé avec succès.`,
+      title: showCreateSubGroup ? "Sous-groupe créé" : "Groupe créé",
+      description: `Le ${showCreateSubGroup ? 'sous-groupe' : 'groupe'} "${newGroupName}" a été créé avec succès.`,
     });
   };
 
@@ -116,9 +158,32 @@ export function GroupManager({ onClose }: GroupManagerProps) {
     }
   };
 
-  const filteredGroups = groups.filter(group => 
-    selectedClasse === 'all' || group.classe === selectedClasse
-  );
+  const handleCreateSubGroup = (parentGroup: Group) => {
+    setParentGroupForSubGroup(parentGroup);
+    setShowCreateSubGroup(true);
+    setShowCreateGroup(true);
+  };
+
+  const filteredGroups = useMemo(() => {
+    return groups.filter(group => {
+      const classeMatch = selectedClasse === 'all' || group.classe === selectedClasse;
+      const etablissementMatch = selectedEtablissement === 'all' || group.etablissementId === selectedEtablissement;
+      const coursMatch = selectedCours === 'all' || group.coursId === selectedCours;
+      return classeMatch && etablissementMatch && coursMatch;
+    });
+  }, [groups, selectedClasse, selectedEtablissement, selectedCours]);
+
+  const getEtablissementName = (etablissementId?: string) => {
+    if (!etablissementId) return '';
+    const etablissement = etablissements.find(e => e.id === etablissementId);
+    return etablissement?.nom || '';
+  };
+
+  const getCoursName = (coursId?: string) => {
+    if (!coursId) return '';
+    const coursItem = cours.find(c => c.id === coursId);
+    return coursItem?.nom || '';
+  };
 
   return (
     <div className="space-y-6">
@@ -139,7 +204,11 @@ export function GroupManager({ onClose }: GroupManagerProps) {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Créer un nouveau groupe</DialogTitle>
+              <DialogTitle>
+                {showCreateSubGroup 
+                  ? `Créer un sous-groupe de "${parentGroupForSubGroup?.name}"` 
+                  : "Créer un nouveau groupe"}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
@@ -148,42 +217,93 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                   <Input
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="Ex: Groupe A"
+                    placeholder={showCreateSubGroup ? "Ex: Sous-groupe 1" : "Ex: Groupe A"}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Classe</label>
-                  <Select value={selectedClasse} onValueChange={setSelectedClasse}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une classe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes.map((classe) => (
-                        <SelectItem key={classe} value={classe}>
-                          {classe}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {!showCreateSubGroup && (
+                  <div>
+                    <label className="text-sm font-medium">Classe *</label>
+                    <Select value={selectedClasse} onValueChange={setSelectedClasse}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une classe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {classes.map((classe) => (
+                          <SelectItem key={classe} value={classe}>
+                            {classe}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {showCreateSubGroup && (
+                  <div>
+                    <label className="text-sm font-medium">Classe (héritée)</label>
+                    <Input 
+                      value={parentGroupForSubGroup?.classe || ''} 
+                      disabled 
+                      className="bg-muted"
+                    />
+                  </div>
+                )}
               </div>
+
+              {!showCreateSubGroup && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-sm font-medium">Établissement (optionnel)</label>
+                    <Select value={newGroupEtablissement} onValueChange={setNewGroupEtablissement}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un établissement" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Aucun établissement</SelectItem>
+                        {etablissements.map((etablissement) => (
+                          <SelectItem key={etablissement.id} value={etablissement.id}>
+                            {etablissement.nom}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Cours (optionnel)</label>
+                    <Select value={newGroupCours} onValueChange={setNewGroupCours}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un cours" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Aucun cours</SelectItem>
+                        {cours.filter(c => selectedClasse === 'all' || c.classe === selectedClasse).map((coursItem) => (
+                          <SelectItem key={coursItem.id} value={coursItem.id}>
+                            {coursItem.nom}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="text-sm font-medium">Description (optionnel)</label>
                 <Input
                   value={newGroupDescription}
                   onChange={(e) => setNewGroupDescription(e.target.value)}
-                  placeholder="Description du groupe"
+                  placeholder={showCreateSubGroup ? "Description du sous-groupe" : "Description du groupe"}
                 />
               </div>
 
-              {selectedClasse !== 'all' && (
+              {(selectedClasse !== 'all' || showCreateSubGroup) && (
                 <div>
                   <label className="text-sm font-medium mb-3 block">
-                    Sélectionner les étudiants ({selectedStudents.length} sélectionnés)
+                    {showCreateSubGroup 
+                      ? `Sélectionner les étudiants du groupe parent (${selectedStudents.length} sélectionnés)` 
+                      : `Sélectionner les étudiants (${selectedStudents.length} sélectionnés)`}
                   </label>
                   <div className="border rounded-lg max-h-48 overflow-y-auto">
-                    {filteredStudents.map((etudiant) => (
+                    {availableStudentsForGroup.map((etudiant) => (
                       <div key={etudiant.id} className="flex items-center space-x-3 p-3 border-b last:border-b-0">
                         <Checkbox
                           checked={selectedStudents.includes(etudiant.id)}
@@ -234,11 +354,21 @@ export function GroupManager({ onClose }: GroupManagerProps) {
               )}
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateGroup(false)}>
+                <Button variant="outline" onClick={() => {
+                  setShowCreateGroup(false);
+                  setShowCreateSubGroup(false);
+                  setParentGroupForSubGroup(null);
+                  setNewGroupName('');
+                  setNewGroupDescription('');
+                  setSelectedStudents([]);
+                  setGroupLeader('');
+                  setNewGroupEtablissement('');
+                  setNewGroupCours('');
+                }}>
                   Annuler
                 </Button>
                 <Button onClick={handleCreateGroup}>
-                  Créer le groupe
+                  {showCreateSubGroup ? "Créer le sous-groupe" : "Créer le groupe"}
                 </Button>
               </div>
             </div>
@@ -246,22 +376,58 @@ export function GroupManager({ onClose }: GroupManagerProps) {
         </Dialog>
       </div>
 
-      {/* Class Filter */}
-      <div className="flex gap-4 items-center">
-        <label className="text-sm font-medium">Filtrer par classe:</label>
-        <Select value={selectedClasse} onValueChange={setSelectedClasse}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes les classes</SelectItem>
-            {classes.map((classe) => (
-              <SelectItem key={classe} value={classe}>
-                {classe}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Filters */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium">Filtrer par classe:</label>
+          <Select value={selectedClasse} onValueChange={setSelectedClasse}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les classes</SelectItem>
+              {classes.map((classe) => (
+                <SelectItem key={classe} value={classe}>
+                  {classe}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium">Filtrer par établissement:</label>
+          <Select value={selectedEtablissement} onValueChange={setSelectedEtablissement}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les établissements</SelectItem>
+              {etablissements.map((etablissement) => (
+                <SelectItem key={etablissement.id} value={etablissement.id}>
+                  {etablissement.nom}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium">Filtrer par cours:</label>
+          <Select value={selectedCours} onValueChange={setSelectedCours}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les cours</SelectItem>
+              {cours.map((coursItem) => (
+                <SelectItem key={coursItem.id} value={coursItem.id}>
+                  {coursItem.nom}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Groups List */}
@@ -275,8 +441,26 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">{group.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{group.name}</CardTitle>
+                        {group.type === 'subgroup' && (
+                          <Badge variant="outline" className="text-xs">
+                            <GitBranch className="h-3 w-3 mr-1" />
+                            Sous-groupe
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">{group.classe}</p>
+                      {group.etablissementId && (
+                        <p className="text-xs text-muted-foreground">
+                          Établissement: {getEtablissementName(group.etablissementId)}
+                        </p>
+                      )}
+                      {group.coursId && (
+                        <p className="text-xs text-muted-foreground">
+                          Cours: {getCoursName(group.coursId)}
+                        </p>
+                      )}
                       {group.description && (
                         <p className="text-sm text-muted-foreground mt-1">
                           {group.description}
@@ -284,6 +468,16 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                       )}
                     </div>
                     <div className="flex gap-1">
+                      {group.type === 'main' && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleCreateSubGroup(group)}
+                          title="Créer un sous-groupe"
+                        >
+                          <GitBranch className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button variant="ghost" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
