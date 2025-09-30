@@ -210,36 +210,48 @@ export type Database = {
         Row: {
           annee_scolaire: string
           classe: string
+          cours_id: string | null
           created_at: string
           description: string | null
+          etablissement_id: string | null
           etudiant_ids: string[] | null
           id: string
           nom: string
+          parent_group_id: string | null
           responsable_id: string | null
+          type: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           annee_scolaire: string
           classe: string
+          cours_id?: string | null
           created_at?: string
           description?: string | null
+          etablissement_id?: string | null
           etudiant_ids?: string[] | null
           id?: string
           nom: string
+          parent_group_id?: string | null
           responsable_id?: string | null
+          type?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           annee_scolaire?: string
           classe?: string
+          cours_id?: string | null
           created_at?: string
           description?: string | null
+          etablissement_id?: string | null
           etudiant_ids?: string[] | null
           id?: string
           nom?: string
+          parent_group_id?: string | null
           responsable_id?: string | null
+          type?: string | null
           updated_at?: string
           user_id?: string
         }

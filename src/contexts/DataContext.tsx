@@ -68,6 +68,10 @@ export interface Groupe {
   responsableId?: string;
   classe: string;
   anneeScolaire: string;
+  etablissementId?: string;
+  coursId?: string;
+  parentGroupId?: string;
+  type: 'main' | 'subgroup';
 }
 
 export interface SeanceCours {
@@ -256,7 +260,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     etudiantIds: data.etudiant_ids || [],
     responsableId: data.responsable_id,
     classe: data.classe,
-    anneeScolaire: data.annee_scolaire
+    anneeScolaire: data.annee_scolaire,
+    etablissementId: data.etablissement_id,
+    coursId: data.cours_id,
+    parentGroupId: data.parent_group_id,
+    type: data.type || 'main'
   });
 
   const transformSeance = (data: any): SeanceCours => ({
@@ -493,6 +501,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     responsable_id: groupe.responsableId,
     classe: groupe.classe,
     annee_scolaire: groupe.anneeScolaire,
+    etablissement_id: groupe.etablissementId,
+    cours_id: groupe.coursId,
+    parent_group_id: groupe.parentGroupId,
+    type: groupe.type || 'main',
     user_id: user?.id
   });
 
