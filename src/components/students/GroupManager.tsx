@@ -46,6 +46,28 @@ export function GroupManager({ onClose }: GroupManagerProps) {
   const [newGroupEtablissement, setNewGroupEtablissement] = useState<string>('');
   const [newGroupCours, setNewGroupCours] = useState<string>('');
 
+  // Filtrer les classes selon l'établissement sélectionné
+  const availableClasses = useMemo(() => {
+    if (newGroupEtablissement) {
+      const classesInEtablissement = [...new Set(
+        etudiants
+          .filter(e => e.etablissementId === newGroupEtablissement)
+          .map(e => e.classe)
+      )];
+      return classesInEtablissement.sort();
+    }
+    const allClasses = [...new Set(etudiants.map(e => e.classe))];
+    return allClasses.sort();
+  }, [etudiants, newGroupEtablissement]);
+
+  // Filtrer les cours selon la classe sélectionnée
+  const availableCours = useMemo(() => {
+    if (selectedClasse !== 'all') {
+      return cours.filter(c => c.classe === selectedClasse);
+    }
+    return cours;
+  }, [cours, selectedClasse]);
+
   const classes = useMemo(() => {
     const allClasses = [...new Set(etudiants.map(e => e.classe))];
     return allClasses.sort();
@@ -223,12 +245,19 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                 {!showCreateSubGroup && (
                   <div>
                     <label className="text-sm font-medium">Classe *</label>
-                    <Select value={selectedClasse} onValueChange={setSelectedClasse}>
+                    <Select 
+                      value={selectedClasse} 
+                      onValueChange={(value) => {
+                        setSelectedClasse(value);
+                        // Réinitialiser le cours si la classe change
+                        setNewGroupCours('');
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner une classe" />
                       </SelectTrigger>
                       <SelectContent>
-                        {classes.map((classe) => (
+                        {availableClasses.map((classe) => (
                           <SelectItem key={classe} value={classe}>
                             {classe}
                           </SelectItem>
@@ -251,31 +280,50 @@ export function GroupManager({ onClose }: GroupManagerProps) {
 
               {!showCreateSubGroup && (
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-medium">Établissement (optionnel)</label>
-                    <Select value={newGroupEtablissement} onValueChange={setNewGroupEtablissement}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un établissement" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">Aucun établissement</SelectItem>
-                        {etablissements.map((etablissement) => (
-                          <SelectItem key={etablissement.id} value={etablissement.id}>
-                            {etablissement.nom}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <label className="text-sm font-medium">Établissement (optionnel)</label>
+                  <Select 
+                    value={newGroupEtablissement} 
+                    onValueChange={(value) => {
+                      setNewGroupEtablissement(value);
+                      // Réinitialiser la classe et le cours si l'établissement change
+                      if (selectedClasse !== 'all' && value) {
+                        const classeExistsInEtablissement = etudiants.some(
+                          e => e.etablissementId === value && e.classe === selectedClasse
+                        );
+                        if (!classeExistsInEtablissement) {
+                          setSelectedClasse('all');
+                          setNewGroupCours('');
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un établissement" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Aucun établissement</SelectItem>
+                      {etablissements.map((etablissement) => (
+                        <SelectItem key={etablissement.id} value={etablissement.id}>
+                          {etablissement.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                   <div>
                     <label className="text-sm font-medium">Cours (optionnel)</label>
-                    <Select value={newGroupCours} onValueChange={setNewGroupCours}>
+                    <Select 
+                      value={newGroupCours} 
+                      onValueChange={setNewGroupCours}
+                      disabled={selectedClasse === 'all'}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un cours" />
+                        <SelectValue placeholder={selectedClasse === 'all' ? "Sélectionner d'abord une classe" : "Sélectionner un cours"} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Aucun cours</SelectItem>
-                        {cours.filter(c => selectedClasse === 'all' || c.classe === selectedClasse).map((coursItem) => (
+                        {availableCours.map((coursItem) => (
                           <SelectItem key={coursItem.id} value={coursItem.id}>
                             {coursItem.nom}
                           </SelectItem>
