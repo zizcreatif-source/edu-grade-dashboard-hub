@@ -46,8 +46,38 @@ export function GroupManager({ onClose }: GroupManagerProps) {
   const [newGroupEtablissement, setNewGroupEtablissement] = useState<string>('');
   const [newGroupCours, setNewGroupCours] = useState<string>('');
 
-  // Filtrer les classes selon l'établissement sélectionné
-  const availableClasses = useMemo(() => {
+  // Filtrer les cours selon l'établissement sélectionné pour les filtres principaux
+  const availableCoursForFilter = useMemo(() => {
+    if (selectedEtablissement === 'all') {
+      return cours;
+    }
+    // Retourner uniquement les cours de l'établissement sélectionné
+    return cours.filter(c => c.etablissementId === selectedEtablissement);
+  }, [cours, selectedEtablissement]);
+
+  // Filtrer les classes selon établissement et cours sélectionnés pour les filtres principaux
+  const availableClassesForFilter = useMemo(() => {
+    let filteredEtudiants = etudiants;
+    
+    // Filtrer par établissement
+    if (selectedEtablissement !== 'all') {
+      filteredEtudiants = filteredEtudiants.filter(e => e.etablissementId === selectedEtablissement);
+    }
+    
+    // Filtrer par cours si sélectionné
+    if (selectedCours !== 'all') {
+      const selectedCoursData = cours.find(c => c.id === selectedCours);
+      if (selectedCoursData) {
+        filteredEtudiants = filteredEtudiants.filter(e => e.classe === selectedCoursData.classe);
+      }
+    }
+    
+    const classes = [...new Set(filteredEtudiants.map(e => e.classe))];
+    return classes.sort();
+  }, [etudiants, selectedEtablissement, selectedCours, cours]);
+
+  // Pour la création de groupe: classes disponibles selon l'établissement
+  const availableClassesForCreation = useMemo(() => {
     if (newGroupEtablissement) {
       const classesInEtablissement = [...new Set(
         etudiants
@@ -60,13 +90,13 @@ export function GroupManager({ onClose }: GroupManagerProps) {
     return allClasses.sort();
   }, [etudiants, newGroupEtablissement]);
 
-  // Filtrer les cours selon la classe sélectionnée
-  const availableCours = useMemo(() => {
-    if (selectedClasse !== 'all') {
-      return cours.filter(c => c.classe === selectedClasse);
+  // Pour la création de groupe: cours disponibles selon l'établissement
+  const availableCoursForCreation = useMemo(() => {
+    if (newGroupEtablissement) {
+      return cours.filter(c => c.etablissementId === newGroupEtablissement);
     }
     return cours;
-  }, [cours, selectedClasse]);
+  }, [cours, newGroupEtablissement]);
 
   const classes = useMemo(() => {
     const allClasses = [...new Set(etudiants.map(e => e.classe))];
@@ -113,6 +143,16 @@ export function GroupManager({ onClose }: GroupManagerProps) {
       toast({
         title: "Étudiants requis",
         description: "Veuillez sélectionner au moins un étudiant",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Vérifier l'établissement pour les groupes principaux
+    if (!showCreateSubGroup && !newGroupEtablissement) {
+      toast({
+        title: "Établissement requis",
+        description: "Veuillez sélectionner un établissement pour le groupe",
         variant: "destructive",
       });
       return;
@@ -252,12 +292,13 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                         // Réinitialiser le cours si la classe change
                         setNewGroupCours('');
                       }}
+                      disabled={!newGroupEtablissement}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner une classe" />
+                        <SelectValue placeholder={!newGroupEtablissement ? "Sélectionner d'abord un établissement" : "Sélectionner une classe"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableClasses.map((classe) => (
+                        {availableClassesForCreation.map((classe) => (
                           <SelectItem key={classe} value={classe}>
                             {classe}
                           </SelectItem>
@@ -281,28 +322,20 @@ export function GroupManager({ onClose }: GroupManagerProps) {
               {!showCreateSubGroup && (
                 <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Établissement (optionnel)</label>
+                  <label className="text-sm font-medium">Établissement *</label>
                   <Select 
                     value={newGroupEtablissement} 
                     onValueChange={(value) => {
                       setNewGroupEtablissement(value);
                       // Réinitialiser la classe et le cours si l'établissement change
-                      if (selectedClasse !== 'all' && value) {
-                        const classeExistsInEtablissement = etudiants.some(
-                          e => e.etablissementId === value && e.classe === selectedClasse
-                        );
-                        if (!classeExistsInEtablissement) {
-                          setSelectedClasse('all');
-                          setNewGroupCours('');
-                        }
-                      }
+                      setSelectedClasse('all');
+                      setNewGroupCours('');
                     }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un établissement" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucun établissement</SelectItem>
                       {etablissements.map((etablissement) => (
                         <SelectItem key={etablissement.id} value={etablissement.id}>
                           {etablissement.nom}
@@ -316,14 +349,14 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                     <Select 
                       value={newGroupCours} 
                       onValueChange={setNewGroupCours}
-                      disabled={selectedClasse === 'all'}
+                      disabled={!newGroupEtablissement}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={selectedClasse === 'all' ? "Sélectionner d'abord une classe" : "Sélectionner un cours"} />
+                        <SelectValue placeholder={!newGroupEtablissement ? "Sélectionner d'abord un établissement" : "Sélectionner un cours"} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Aucun cours</SelectItem>
-                        {availableCours.map((coursItem) => (
+                        {availableCoursForCreation.map((coursItem) => (
                           <SelectItem key={coursItem.id} value={coursItem.id}>
                             {coursItem.nom}
                           </SelectItem>
@@ -343,7 +376,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                 />
               </div>
 
-              {(selectedClasse !== 'all' || showCreateSubGroup) && (
+              {((newGroupEtablissement && selectedClasse !== 'all') || showCreateSubGroup) && (
                 <div>
                   <label className="text-sm font-medium mb-3 block">
                     {showCreateSubGroup 
@@ -427,25 +460,13 @@ export function GroupManager({ onClose }: GroupManagerProps) {
       {/* Filters */}
       <div className="grid gap-4 md:grid-cols-3">
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium">Filtrer par classe:</label>
-          <Select value={selectedClasse} onValueChange={setSelectedClasse}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les classes</SelectItem>
-              {classes.map((classe) => (
-                <SelectItem key={classe} value={classe}>
-                  {classe}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Filtrer par établissement:</label>
-          <Select value={selectedEtablissement} onValueChange={setSelectedEtablissement}>
+          <Select value={selectedEtablissement} onValueChange={(value) => {
+            setSelectedEtablissement(value);
+            // Réinitialiser cours et classe si établissement change
+            setSelectedCours('all');
+            setSelectedClasse('all');
+          }}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -462,15 +483,44 @@ export function GroupManager({ onClose }: GroupManagerProps) {
         
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Filtrer par cours:</label>
-          <Select value={selectedCours} onValueChange={setSelectedCours}>
+          <Select 
+            value={selectedCours} 
+            onValueChange={(value) => {
+              setSelectedCours(value);
+              // Réinitialiser la classe si cours change
+              setSelectedClasse('all');
+            }}
+            disabled={selectedEtablissement === 'all'}
+          >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder={selectedEtablissement === 'all' ? "Sélectionner d'abord un établissement" : "Tous les cours"} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les cours</SelectItem>
-              {cours.map((coursItem) => (
+              {availableCoursForFilter.map((coursItem) => (
                 <SelectItem key={coursItem.id} value={coursItem.id}>
                   {coursItem.nom}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium">Filtrer par classe:</label>
+          <Select 
+            value={selectedClasse} 
+            onValueChange={setSelectedClasse}
+            disabled={selectedEtablissement === 'all'}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={selectedEtablissement === 'all' ? "Sélectionner d'abord un établissement" : "Toutes les classes"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les classes</SelectItem>
+              {availableClassesForFilter.map((classe) => (
+                <SelectItem key={classe} value={classe}>
+                  {classe}
                 </SelectItem>
               ))}
             </SelectContent>
