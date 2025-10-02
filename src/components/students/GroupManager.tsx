@@ -501,12 +501,12 @@ export function GroupManager({ onClose }: GroupManagerProps) {
               {selectedStudents.length > 0 && (
                 <div>
                   <label className="text-sm font-medium">Responsable du groupe (optionnel)</label>
-                  <Select value={groupLeader} onValueChange={setGroupLeader}>
+                  <Select value={groupLeader || "none"} onValueChange={(value) => setGroupLeader(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un responsable" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucun responsable</SelectItem>
+                      <SelectItem value="none">Aucun responsable</SelectItem>
                       {selectedStudents.map((studentId) => {
                         const student = getStudentById(studentId);
                         return student ? (
