@@ -32,6 +32,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
   const [groupLeader, setGroupLeader] = useState<string>('');
   const [newGroupEtablissement, setNewGroupEtablissement] = useState<string>('');
   const [newGroupCours, setNewGroupCours] = useState<string>('');
+  const [newGroupClasse, setNewGroupClasse] = useState<string>('');
   const [newGroupAnneeScolaire, setNewGroupAnneeScolaire] = useState<string>(new Date().getFullYear().toString());
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
 
@@ -157,7 +158,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
     }
 
     // Vérifier la classe pour les groupes principaux
-    if (!showCreateSubGroup && !editingGroup && selectedClasse === 'all') {
+    if (!showCreateSubGroup && !editingGroup && !newGroupClasse) {
       toast({
         title: "Classe requise",
         description: "Veuillez sélectionner une classe pour le groupe",
@@ -171,7 +172,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
       description: newGroupDescription,
       etudiantIds: selectedStudents,
       responsableId: groupLeader || undefined,
-      classe: showCreateSubGroup ? parentGroupForSubGroup!.classe : selectedClasse,
+      classe: showCreateSubGroup ? parentGroupForSubGroup!.classe : newGroupClasse,
       anneeScolaire: newGroupAnneeScolaire,
       etablissementId: editingGroup?.etablissementId || newGroupEtablissement || undefined,
       coursId: newGroupCours || undefined,
@@ -213,6 +214,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
     setGroupLeader('');
     setNewGroupEtablissement('');
     setNewGroupCours('');
+    setNewGroupClasse('');
     setShowCreateGroup(false);
     setShowCreateSubGroup(false);
     setParentGroupForSubGroup(null);
@@ -265,7 +267,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
     setGroupLeader(group.responsableId || '');
     setNewGroupEtablissement(group.etablissementId || '');
     setNewGroupCours(group.coursId || '');
-    setSelectedClasse(group.classe);
+    setNewGroupClasse(group.classe);
     setNewGroupAnneeScolaire(group.anneeScolaire);
     setShowCreateGroup(true);
   };
@@ -339,9 +341,9 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                   <div>
                     <label className="text-sm font-medium">Classe *</label>
                     <Select 
-                      value={selectedClasse} 
+                      value={newGroupClasse} 
                       onValueChange={(value) => {
-                        setSelectedClasse(value);
+                        setNewGroupClasse(value);
                         // Réinitialiser le cours si la classe change
                         setNewGroupCours('');
                       }}
@@ -381,7 +383,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                     onValueChange={(value) => {
                       setNewGroupEtablissement(value);
                       // Réinitialiser la classe et le cours si l'établissement change
-                      setSelectedClasse('all');
+                      setNewGroupClasse('');
                       setNewGroupCours('');
                     }}
                   >
@@ -429,7 +431,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                 />
               </div>
 
-              {((newGroupEtablissement && selectedClasse !== 'all') || showCreateSubGroup) && (
+              {((newGroupEtablissement && newGroupClasse) || showCreateSubGroup) && (
                 <div>
                   <label className="text-sm font-medium mb-3 block">
                     {showCreateSubGroup 
