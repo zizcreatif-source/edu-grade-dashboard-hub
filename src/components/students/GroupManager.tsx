@@ -157,6 +157,16 @@ export function GroupManager({ onClose }: GroupManagerProps) {
       return;
     }
 
+    // Vérifier le cours pour les groupes principaux
+    if (!showCreateSubGroup && !editingGroup && !newGroupCours) {
+      toast({
+        title: "Cours requis",
+        description: "Veuillez sélectionner un cours pour le groupe",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Vérifier la classe pour les groupes principaux
     if (!showCreateSubGroup && !editingGroup && !newGroupClasse) {
       toast({
@@ -400,7 +410,7 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                   </Select>
                 </div>
                   <div>
-                    <label className="text-sm font-medium">Cours (optionnel)</label>
+                    <label className="text-sm font-medium">Cours *</label>
                     <Select 
                       value={newGroupCours} 
                       onValueChange={setNewGroupCours}
@@ -410,7 +420,6 @@ export function GroupManager({ onClose }: GroupManagerProps) {
                         <SelectValue placeholder={!newGroupEtablissement ? "Sélectionner d'abord un établissement" : "Sélectionner un cours"} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Aucun cours</SelectItem>
                         {availableCoursForCreation.map((coursItem) => (
                           <SelectItem key={coursItem.id} value={coursItem.id}>
                             {coursItem.nom}
