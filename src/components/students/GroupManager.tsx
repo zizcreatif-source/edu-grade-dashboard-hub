@@ -117,8 +117,30 @@ export function GroupManager({ onClose }: GroupManagerProps) {
         );
       }
     }
-    return filteredStudents;
-  }, [filteredStudents, showCreateSubGroup, parentGroupForSubGroup, editingGroup, groupes]);
+    
+    // Filtrer les étudiants selon l'établissement, cours et classe sélectionnés dans le formulaire
+    let studentsToShow = etudiants;
+    
+    // Filtrer par établissement
+    if (newGroupEtablissement) {
+      studentsToShow = studentsToShow.filter(e => e.etablissementId === newGroupEtablissement);
+    }
+    
+    // Filtrer par classe
+    if (newGroupClasse) {
+      studentsToShow = studentsToShow.filter(e => e.classe === newGroupClasse);
+    }
+    
+    // Filtrer par cours (vérifier que le cours correspond à la classe)
+    if (newGroupCours) {
+      const selectedCoursData = cours.find(c => c.id === newGroupCours);
+      if (selectedCoursData) {
+        studentsToShow = studentsToShow.filter(e => e.classe === selectedCoursData.classe);
+      }
+    }
+    
+    return studentsToShow;
+  }, [etudiants, newGroupEtablissement, newGroupClasse, newGroupCours, cours, filteredStudents, showCreateSubGroup, parentGroupForSubGroup, editingGroup, groupes]);
 
   const getInitials = (nom: string, prenom: string) => {
     return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
