@@ -805,6 +805,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
+      // Find the evaluation to get its name and coursId
+      const evaluation = evaluations.find(e => e.id === id);
+      if (!evaluation) return;
+
+      // First, delete all notes associated with this evaluation
+      const { error: notesError } = await supabase
+        .from('notes')
+        .delete()
+        .eq('cours_id', evaluation.coursId)
+        .eq('evaluation', evaluation.nom);
+      
+      if (notesError) throw notesError;
+
+      // Then delete the evaluation
       const { error } = await supabase
         .from('evaluations')
         .delete()
@@ -813,8 +827,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       setEvaluations(prev => prev.filter(e => e.id !== id));
+      // Also update the notes state to remove deleted notes
+      setNotes(prev => prev.filter(n => !(n.coursId === evaluation.coursId && n.evaluation === evaluation.nom)));
     } catch (error) {
       console.error('Error deleting evaluation:', error);
+      throw error;
     }
   };
 

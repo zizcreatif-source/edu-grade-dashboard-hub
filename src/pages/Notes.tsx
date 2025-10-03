@@ -13,12 +13,13 @@ import { ClassStats } from '@/components/grades/ClassStats';
 import { GradeHistory } from '@/components/grades/GradeHistory';
 import { QuickGradingInterface } from '@/components/grades/QuickGradingInterface';
 import { GradePdfExporter } from '@/components/grades/GradePdfExporter';
+import { EvaluationManager } from '@/components/grades/EvaluationManager';
 
 export default function Notes() {
   const { cours, evaluations, etudiants, notes } = useData();
   const [selectedCours, setSelectedCours] = useState<string>('');
   const [selectedEvaluation, setSelectedEvaluation] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'quick' | 'grid' | 'export' | 'stats'>('quick');
+  const [viewMode, setViewMode] = useState<'quick' | 'grid' | 'export' | 'stats' | 'manage'>('quick');
   const [showEvaluationForm, setShowEvaluationForm] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
 
@@ -197,11 +198,12 @@ export default function Notes() {
       {/* Main Content */}
       {selectedCours ? (
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as any)}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="quick">Notation rapide</TabsTrigger>
             <TabsTrigger value="grid">Saisie avancée</TabsTrigger>
             <TabsTrigger value="export">Export PDF</TabsTrigger>
             <TabsTrigger value="stats">Statistiques</TabsTrigger>
+            <TabsTrigger value="manage">Évaluations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="quick" className="space-y-4">
@@ -288,6 +290,10 @@ export default function Notes() {
               coursId={selectedCours}
               evaluationId={selectedEvaluation}
             />
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-4">
+            <EvaluationManager coursId={selectedCours} />
           </TabsContent>
         </Tabs>
       ) : (
