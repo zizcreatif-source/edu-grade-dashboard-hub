@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useData, Etudiant, Evaluation, Cours } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -22,10 +25,53 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [professorName, setProfessorName] = useState<string>('Professeur');
+  const [exportMode, setExportMode] = useState<'single' | 'average'>('single');
+  const [selectedEvaluations, setSelectedEvaluations] = useState<string[]>([evaluationId]);
 
   const evaluation = evaluations.find(e => e.id === evaluationId);
   const course = cours.find(c => c.id === coursId);
-  const etablissement = etablissements.find(e => e.id === course?.etablissementId) || etablissements[0]; // Établissement du cours ou premier établissement
+  const etablissement = etablissements.find(e => e.id === course?.etablissementId) || etablissements[0];
+  const courseEvaluations = evaluations.filter(e => e.coursId === coursId);
+
+  // Mettre à jour selectedEvaluations quand evaluationId change
+  useEffect(() => {
+    setSelectedEvaluations([evaluationId]);
+  }, [evaluationId]);
+
+  const toggleEvaluation = (evalId: string) => {
+    setSelectedEvaluations(prev => 
+      prev.includes(evalId) 
+        ? prev.filter(id => id !== evalId)
+        : [...prev, evalId]
+    );
+  };
+
+  const calculateFinalGrade = (studentId: string) => {
+    if (exportMode === 'single') {
+      const note = notes.find(n => 
+        n.etudiantId === studentId && 
+        n.coursId === coursId && 
+        n.evaluation === evaluation?.nom
+      );
+      return note?.note || null;
+    } else {
+      // Mode moyenne
+      const selectedEvals = evaluations.filter(e => selectedEvaluations.includes(e.id));
+      const studentNotes = selectedEvals
+        .map(evaluation => {
+          const note = notes.find(n => 
+            n.etudiantId === studentId && 
+            n.coursId === coursId && 
+            n.evaluation === evaluation.nom
+          );
+          return note?.note;
+        })
+        .filter(n => n !== undefined && n !== null) as number[];
+
+      if (studentNotes.length === 0) return null;
+      return studentNotes.reduce((sum, n) => sum + n, 0) / studentNotes.length;
+    }
+  };
 
   // Récupérer le nom du professeur depuis la table profiles
   useEffect(() => {
@@ -99,9 +145,18 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
       
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Évaluation: ${evaluation.nom} (${evaluation.type})`, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 6;
-      pdf.text(`Classe: ${course.classe} - Date: ${new Date(evaluation.date).toLocaleDateString('fr-FR')}`, pageWidth / 2, yPosition, { align: 'center' });
+      
+      if (exportMode === 'single') {
+        pdf.text(`Évaluation: ${evaluation.nom} (${evaluation.type})`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 6;
+        pdf.text(`Classe: ${course.classe} - Date: ${new Date(evaluation.date).toLocaleDateString('fr-FR')}`, pageWidth / 2, yPosition, { align: 'center' });
+      } else {
+        const selectedEvals = evaluations.filter(e => selectedEvaluations.includes(e.id));
+        const evalNames = selectedEvals.map(e => e.nom).join(', ');
+        pdf.text(`Évaluations: ${evalNames}`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 6;
+        pdf.text(`Classe: ${course.classe} - Moyenne des évaluations`, pageWidth / 2, yPosition, { align: 'center' });
+      }
       yPosition += 6;
       
       // Ajouter le nom du professeur
@@ -133,12 +188,8 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
       pdf.setFont('helvetica', 'normal');
       
       const studentGrades = students.map(student => {
-        const note = notes.find(n => 
-          n.etudiantId === student.id && 
-          n.coursId === coursId && 
-          n.evaluation === evaluation.nom
-        );
-        return { student, note: note?.note || null };
+        const finalGrade = calculateFinalGrade(student.id);
+        return { student, note: finalGrade };
       }).sort((a, b) => a.student.nom.localeCompare(b.student.nom));
 
       studentGrades.forEach((item, index) => {
@@ -271,12 +322,8 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
   }
 
   const studentNotes = students.map(student => {
-    const note = notes.find(n => 
-      n.etudiantId === student.id && 
-      n.coursId === coursId && 
-      n.evaluation === evaluation.nom
-    );
-    return { student, note: note?.note || null };
+    const finalGrade = calculateFinalGrade(student.id);
+    return { student, note: finalGrade };
   });
 
   const gradedCount = studentNotes.filter(item => item.note !== null).length;
@@ -290,6 +337,50 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Mode d'export */}
+        <div className="space-y-4 p-4 border rounded-lg">
+          <Label className="text-base font-semibold">Mode d'export</Label>
+          <RadioGroup value={exportMode} onValueChange={(value: 'single' | 'average') => setExportMode(value)}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="single" id="single" />
+              <Label htmlFor="single" className="font-normal cursor-pointer">
+                Évaluation unique (note actuelle)
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="average" id="average" />
+              <Label htmlFor="average" className="font-normal cursor-pointer">
+                Moyenne de plusieurs évaluations
+              </Label>
+            </div>
+          </RadioGroup>
+
+          {exportMode === 'average' && (
+            <div className="space-y-2 pl-6 pt-2 border-l-2">
+              <Label className="text-sm font-medium">Sélectionner les évaluations à inclure :</Label>
+              <div className="space-y-2">
+                {courseEvaluations.map(evaluation => (
+                  <div key={evaluation.id} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={evaluation.id}
+                      checked={selectedEvaluations.includes(evaluation.id)}
+                      onCheckedChange={() => toggleEvaluation(evaluation.id)}
+                    />
+                    <Label htmlFor={evaluation.id} className="font-normal cursor-pointer text-sm">
+                      {evaluation.nom} ({evaluation.type}) - {new Date(evaluation.date).toLocaleDateString('fr-FR')}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedEvaluations.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {selectedEvaluations.length} évaluation(s) sélectionnée(s) - La moyenne sera calculée
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Aperçu de l'export */}
         <div className="p-4 bg-muted rounded-lg space-y-3">
           <div className="flex items-center space-x-2">
@@ -299,7 +390,12 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
           
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-primary" />
-            <span>{course.nom} - {evaluation.nom}</span>
+            <span>
+              {course.nom} - {exportMode === 'single' 
+                ? evaluation.nom 
+                : `Moyenne de ${selectedEvaluations.length} évaluation(s)`
+              }
+            </span>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -345,7 +441,7 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
 
         <Button 
           onClick={generatePDF}
-          disabled={isGenerating || gradedCount === 0}
+          disabled={isGenerating || gradedCount === 0 || (exportMode === 'average' && selectedEvaluations.length === 0)}
           className="w-full"
           size="lg"
         >
@@ -356,6 +452,12 @@ export function GradePdfExporter({ coursId, evaluationId, students }: GradePdfEx
         {gradedCount === 0 && (
           <p className="text-sm text-muted-foreground text-center">
             Aucune note saisie pour cette évaluation
+          </p>
+        )}
+        
+        {exportMode === 'average' && selectedEvaluations.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center">
+            Sélectionnez au moins une évaluation
           </p>
         )}
       </CardContent>
