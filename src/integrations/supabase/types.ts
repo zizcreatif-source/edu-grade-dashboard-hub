@@ -259,30 +259,36 @@ export type Database = {
       }
       landing_pages: {
         Row: {
+          carousel_images: Json | null
           contact: Json
           created_at: string
           id: string
           is_active: boolean | null
+          layout_type: string | null
           personal_info: Json
           specialites: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          carousel_images?: Json | null
           contact?: Json
           created_at?: string
           id?: string
           is_active?: boolean | null
+          layout_type?: string | null
           personal_info?: Json
           specialites?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          carousel_images?: Json | null
           contact?: Json
           created_at?: string
           id?: string
           is_active?: boolean | null
+          layout_type?: string | null
           personal_info?: Json
           specialites?: string[] | null
           updated_at?: string
