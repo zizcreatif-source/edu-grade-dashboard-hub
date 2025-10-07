@@ -172,9 +172,11 @@ export default function Landing() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-primary-glow">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Me contacter
+                <Button size="lg" className="bg-gradient-to-r from-primary to-primary-glow" asChild>
+                  <a href={`mailto:${data.contact.email}`}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Me contacter
+                  </a>
                 </Button>
               </div>
             </div>
@@ -194,64 +196,6 @@ export default function Landing() {
       </section>
 
 
-      {/* Contact */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Contact</h2>
-            <p className="text-xl text-muted-foreground">
-              N'hésitez pas à me contacter pour discuter de vos besoins
-            </p>
-          </div>
-
-          <Card className="border-0 shadow-xl">
-            <CardContent className="pt-8 pb-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <Mail className="h-6 w-6 text-primary" />
-                    <div>
-                      <p className="font-medium">Email</p>
-                      <p className="text-muted-foreground">{data.contact.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <Phone className="h-6 w-6 text-primary" />
-                    <div>
-                      <p className="font-medium">Téléphone</p>
-                      <p className="text-muted-foreground">{data.contact.telephone}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <MapPin className="h-6 w-6 text-primary" />
-                    <div>
-                      <p className="font-medium">Adresse</p>
-                      <p className="text-muted-foreground">{data.contact.adresse}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <GraduationCap className="h-6 w-6 text-primary" />
-                    <div>
-                      <p className="font-medium">Établissement</p>
-                      <p className="text-muted-foreground">{data.etablissement}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <Button className="w-full bg-gradient-to-r from-primary to-primary-glow" size="lg">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Envoyer un message
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-muted/50 py-12 px-4 mt-20">
