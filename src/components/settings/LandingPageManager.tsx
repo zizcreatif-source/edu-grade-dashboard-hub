@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Eye, Save, Upload, X, Plus, ExternalLink, Image } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Eye, Save, Upload, X, Plus, ExternalLink, LayoutGrid } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,6 +37,7 @@ export function LandingPageManager() {
   const [loading, setLoading] = useState(true);
   const [landingPageId, setLandingPageId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [layoutType, setLayoutType] = useState<string>('classic');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [landingData, setLandingData] = useState<LandingPageData>({
@@ -83,6 +84,8 @@ export function LandingPageManager() {
             specialites: data.specialites || [],
             contact
           });
+          
+          setLayoutType((data as any).layout_type || 'classic');
         }
       } catch (error) {
         console.error('Error fetching landing page:', error);
@@ -105,6 +108,7 @@ export function LandingPageManager() {
         personal_info: landingData.personalInfo,
         specialites: landingData.specialites,
         contact: landingData.contact,
+        layout_type: layoutType,
         is_active: true
       };
 
@@ -287,12 +291,64 @@ export function LandingPageManager() {
         </div>
       </div>
 
-      <Tabs defaultValue="personal" className="space-y-6">
-        <TabsList className="grid grid-cols-3 w-full max-w-2xl">
+      <Tabs defaultValue="layout" className="space-y-6">
+        <TabsList className="grid grid-cols-4 w-full max-w-3xl">
+          <TabsTrigger value="layout">Design</TabsTrigger>
           <TabsTrigger value="personal">Profil</TabsTrigger>
           <TabsTrigger value="specialites">Spécialités</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="layout" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Type de page d'accueil</CardTitle>
+              <CardDescription>
+                Choisissez le style de votre page d'accueil
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <RadioGroup 
+                value={layoutType} 
+                onValueChange={setLayoutType}
+                disabled={!isEditing}
+                className="space-y-4"
+              >
+                <div className="flex items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-accent/50 transition-colors">
+                  <RadioGroupItem value="classic" id="classic" />
+                  <div className="flex-1">
+                    <Label htmlFor="classic" className="font-medium cursor-pointer">
+                      Layout Classique
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Design traditionnel avec une présentation claire et professionnelle
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-accent/50 transition-colors">
+                  <RadioGroupItem value="glassmorphism" id="glassmorphism" />
+                  <div className="flex-1">
+                    <Label htmlFor="glassmorphism" className="font-medium cursor-pointer">
+                      Layout Glassmorphism
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Design moderne avec effet de verre et carousel - photo en arrière-plan
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+
+              {isEditing && (
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    💡 Prévisualisez votre page après avoir sauvegardé pour voir le nouveau design
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="personal" className="space-y-6">
           <Card>
