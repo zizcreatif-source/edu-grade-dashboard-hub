@@ -7,10 +7,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Eye, Save, Upload, X, Plus, ExternalLink, LayoutGrid } from "lucide-react";
+import { Eye, Save, Upload, X, Plus, ExternalLink, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableCarouselImage } from './SortableCarouselImage';
 
 interface LandingPageData {
   personalInfo: {
@@ -350,6 +366,25 @@ export function LandingPageManager() {
     setCarouselImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setCarouselImages((items) => {
+        const oldIndex = items.findIndex((_, i) => i.toString() === active.id);
+        const newIndex = items.findIndex((_, i) => i.toString() === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -452,46 +487,48 @@ export function LandingPageManager() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  {carouselImages.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img 
-                        src={image} 
-                        alt={`Carousel ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
-                      {isEditing && (
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeCarouselImage(index)}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={carouselImages.map((_, i) => i.toString())}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="grid grid-cols-3 gap-4">
+                      {carouselImages.map((image, index) => (
+                        <SortableCarouselImage
+                          key={index}
+                          id={index.toString()}
+                          image={image}
+                          index={index}
+                          onRemove={removeCarouselImage}
+                          isEditing={isEditing}
+                        />
+                      ))}
+                      
+                      {carouselImages.length < 3 && isEditing && (
+                        <button
+                          onClick={() => carouselInputRef.current?.click()}
+                          disabled={uploadingCarousel}
+                          className="h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-accent/50 transition-colors"
                         >
-                          <X className="h-4 w-4" />
-                        </Button>
+                          {uploadingCarousel ? (
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                          ) : (
+                            <>
+                              <Upload className="h-6 w-6 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">
+                                Ajouter une image
+                              </span>
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
-                  ))}
-                  
-                  {carouselImages.length < 3 && isEditing && (
-                    <button
-                      onClick={() => carouselInputRef.current?.click()}
-                      disabled={uploadingCarousel}
-                      className="h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-accent/50 transition-colors"
-                    >
-                      {uploadingCarousel ? (
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                      ) : (
-                        <>
-                          <Upload className="h-6 w-6 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            Ajouter une image
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
+                  </SortableContext>
+                </DndContext>
 
                 <input
                   type="file"
@@ -503,9 +540,13 @@ export function LandingPageManager() {
                 />
 
                 {isEditing && (
-                  <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="bg-muted/50 p-4 rounded-lg space-y-2">
                     <p className="text-xs text-muted-foreground">
                       💡 Formats acceptés: JPG, PNG, GIF • Taille max: 5MB par image • {3 - carouselImages.length} image(s) restante(s)
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <GripVertical className="h-3 w-3" />
+                      Glissez-déposez les images pour les réordonner
                     </p>
                   </div>
                 )}

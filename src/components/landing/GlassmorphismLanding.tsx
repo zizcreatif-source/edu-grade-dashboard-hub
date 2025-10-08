@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, Mail, Moon, Sun, LayoutDashboard } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { GraduationCap, Mail, Moon, Sun, LayoutDashboard, Phone, MapPin } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 interface GlassmorphismLandingProps {
   data: {
@@ -38,7 +38,7 @@ export function GlassmorphismLanding({
 }: GlassmorphismLandingProps) {
   const backgroundImages = data.carouselImages && data.carouselImages.length > 0 
     ? data.carouselImages 
-    : [data.photo, data.photo, data.photo];
+    : [data.photo];
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -46,18 +46,23 @@ export function GlassmorphismLanding({
       <div className="fixed inset-0 z-0">
         <Carousel 
           opts={{ loop: true }}
+          plugins={[
+            Autoplay({
+              delay: 5000,
+            }),
+          ]}
           className="h-full w-full"
         >
           <CarouselContent className="h-full">
             {backgroundImages.map((image, index) => (
               <CarouselItem key={index} className="h-screen">
                 <div 
-                  className="h-full w-full"
+                  className="h-full w-full transition-all duration-1000"
                   style={{
                     backgroundImage: `url(${image})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    filter: 'blur(20px) brightness(0.7)',
+                    filter: 'blur(20px) brightness(0.6)',
                   }}
                 />
               </CarouselItem>
@@ -67,7 +72,7 @@ export function GlassmorphismLanding({
       </div>
       
       {/* Overlay gradient */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-br from-background/90 via-background/80 to-primary/20" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-background/90 via-background/85 to-primary/20" />
 
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/30 border-b border-white/10">
@@ -102,134 +107,120 @@ export function GlassmorphismLanding({
         </div>
       </header>
 
-      {/* Main Content - Carousel */}
-      <section className="relative z-10 py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <Carousel className="w-full">
-            <CarouselContent>
-              {/* Slide 1 - Hero */}
-              <CarouselItem>
-                <div className="flex items-center justify-center min-h-[70vh]">
-                  <div className="backdrop-blur-xl bg-background/30 border border-white/20 rounded-3xl p-12 max-w-4xl shadow-2xl">
-                    <div className="text-center space-y-6">
-                      <div className="mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-white/30 shadow-2xl">
-                        <img
-                          src={data.photo}
-                          alt={data.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      
-                      <Badge className="w-fit mx-auto bg-primary/20 backdrop-blur-sm text-primary border-primary/30">
-                        {data.experience}
+      {/* Main Content */}
+      <section className="relative z-10 py-12 px-4">
+        <div className="container mx-auto max-w-6xl space-y-8">
+          {/* Hero Card */}
+          <Card className="backdrop-blur-xl bg-background/30 border-white/20 shadow-2xl">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/30 shadow-2xl flex-shrink-0">
+                  <img
+                    src={data.photo}
+                    alt={data.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                <div className="flex-1 text-center md:text-left space-y-3">
+                  <Badge className="w-fit bg-primary/20 backdrop-blur-sm text-primary border-primary/30">
+                    {data.experience}
+                  </Badge>
+                  
+                  <h1 className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                    {data.name}
+                  </h1>
+                  
+                  <p className="text-xl text-primary font-medium">
+                    {data.title}
+                  </p>
+                  
+                  <p className="text-lg text-foreground/90">
+                    {data.etablissement}
+                  </p>
+                </div>
+
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-primary to-primary-glow backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all flex-shrink-0" 
+                  asChild
+                >
+                  <a href={`mailto:${data.contact.email}`}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Me contacter
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* About and Specialties */}
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="backdrop-blur-xl bg-background/30 border-white/20 shadow-2xl">
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="h-8 w-8 text-primary" />
+                    <h2 className="text-3xl font-bold">À propos</h2>
+                  </div>
+                  
+                  <p className="text-lg text-foreground/90 leading-relaxed">
+                    {data.presentation}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="backdrop-blur-xl bg-background/30 border-white/20 shadow-2xl">
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-semibold">Spécialités</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {data.specialites.map((spec, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="secondary" 
+                        className="text-base px-5 py-2 backdrop-blur-sm bg-secondary/50 border border-white/10"
+                      >
+                        {spec}
                       </Badge>
-                      
-                      <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                        {data.name}
-                      </h1>
-                      
-                      <p className="text-2xl text-primary font-medium">
-                        {data.title}
-                      </p>
-                      
-                      <p className="text-xl text-foreground/90 max-w-2xl mx-auto">
-                        {data.etablissement}
-                      </p>
-
-                      <Button 
-                        size="lg" 
-                        className="bg-gradient-to-r from-primary to-primary-glow backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all" 
-                        asChild
-                      >
-                        <a href={`mailto:${data.contact.email}`}>
-                          <Mail className="mr-2 h-4 w-4" />
-                          Me contacter
-                        </a>
-                      </Button>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              </CarouselItem>
-
-              {/* Slide 2 - Présentation */}
-              <CarouselItem>
-                <div className="flex items-center justify-center min-h-[70vh]">
-                  <div className="backdrop-blur-xl bg-background/30 border border-white/20 rounded-3xl p-12 max-w-4xl shadow-2xl">
-                    <div className="space-y-8">
-                      <div className="text-center">
-                        <GraduationCap className="h-16 w-16 text-primary mx-auto mb-4" />
-                        <h2 className="text-4xl font-bold mb-4">À propos</h2>
-                      </div>
-                      
-                      <p className="text-xl text-foreground/90 leading-relaxed text-center">
-                        {data.presentation}
-                      </p>
-
-                      <div className="pt-6">
-                        <h3 className="text-2xl font-semibold mb-4 text-center">Spécialités</h3>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                          {data.specialites.map((spec, index) => (
-                            <Badge 
-                              key={index} 
-                              variant="secondary" 
-                              className="text-lg px-6 py-2 backdrop-blur-sm bg-secondary/50 border border-white/10"
-                            >
-                              {spec}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CarouselItem>
-
-              {/* Slide 3 - Contact */}
-              <CarouselItem>
-                <div className="flex items-center justify-center min-h-[70vh]">
-                  <div className="backdrop-blur-xl bg-background/30 border border-white/20 rounded-3xl p-12 max-w-4xl shadow-2xl">
-                    <div className="space-y-8 text-center">
-                      <Mail className="h-16 w-16 text-primary mx-auto" />
-                      <h2 className="text-4xl font-bold">Contactez-moi</h2>
-                      
-                      <div className="space-y-4 text-xl">
-                        <p className="text-foreground/90">
-                          N'hésitez pas à me contacter pour toute question
-                        </p>
-                        
-                        <div className="space-y-3 pt-4">
-                          <p className="text-primary font-medium">{data.contact.email}</p>
-                          <p className="text-foreground/80">{data.contact.telephone}</p>
-                          <p className="text-foreground/80">{data.contact.adresse}</p>
-                        </div>
-                      </div>
-
-                      <Button 
-                        size="lg" 
-                        className="bg-gradient-to-r from-primary to-primary-glow backdrop-blur-sm shadow-xl mt-6" 
-                        asChild
-                      >
-                        <a href={`mailto:${data.contact.email}`}>
-                          <Mail className="mr-2 h-5 w-5" />
-                          Envoyer un email
-                        </a>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CarouselItem>
-            </CarouselContent>
-            
-            <CarouselPrevious className="backdrop-blur-sm bg-background/30 border-white/20" />
-            <CarouselNext className="backdrop-blur-sm bg-background/30 border-white/20" />
-          </Carousel>
-
-          {/* Indicator dots */}
-          <div className="flex justify-center gap-2 mt-8">
-            <div className="w-2 h-2 rounded-full bg-primary/50" />
-            <div className="w-2 h-2 rounded-full bg-primary/50" />
-            <div className="w-2 h-2 rounded-full bg-primary/50" />
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Contact Card */}
+          <Card className="backdrop-blur-xl bg-background/30 border-white/20 shadow-2xl">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Mail className="h-8 w-8 text-primary" />
+                  <h2 className="text-3xl font-bold">Contact</h2>
+                </div>
+                
+                <div className="flex flex-col md:flex-row gap-6 text-center md:text-left">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-primary" />
+                    <a href={`mailto:${data.contact.email}`} className="text-lg hover:text-primary transition-colors">
+                      {data.contact.email}
+                    </a>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-5 w-5 text-primary" />
+                    <span className="text-lg">{data.contact.telephone}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <span className="text-lg">{data.contact.adresse}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
