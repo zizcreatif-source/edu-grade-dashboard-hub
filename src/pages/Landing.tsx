@@ -35,7 +35,8 @@ const defaultProfessorData = {
     telephone: "01 23 45 67 89",
     adresse: "France"
   },
-  presentation: "Passionné par l'enseignement, j'accompagne mes élèves vers la réussite."
+  presentation: "Passionné par l'enseignement, j'accompagne mes élèves vers la réussite.",
+  carouselImages: []
 };
 
 export default function Landing() {
@@ -74,7 +75,8 @@ export default function Landing() {
             experience: personalInfo.experience,
             etablissement: personalInfo.etablissement,
             contact: contact,
-            presentation: personalInfo.presentation
+            presentation: personalInfo.presentation,
+            carouselImages: (landingData.carousel_images as string[]) || []
           });
           
           setLayoutType((landingData as any).layout_type || 'classic');

@@ -38,7 +38,10 @@ export function LandingPageManager() {
   const [landingPageId, setLandingPageId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [layoutType, setLayoutType] = useState<string>('classic');
+  const [carouselImages, setCarouselImages] = useState<string[]>([]);
+  const [uploadingCarousel, setUploadingCarousel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const carouselInputRef = useRef<HTMLInputElement>(null);
 
   const [landingData, setLandingData] = useState<LandingPageData>({
     personalInfo: {
@@ -86,6 +89,7 @@ export function LandingPageManager() {
           });
           
           setLayoutType((data as any).layout_type || 'classic');
+          setCarouselImages((data.carousel_images as string[]) || []);
         }
       } catch (error) {
         console.error('Error fetching landing page:', error);
@@ -109,6 +113,7 @@ export function LandingPageManager() {
         specialites: landingData.specialites,
         contact: landingData.contact,
         layout_type: layoutType,
+        carousel_images: carouselImages,
         is_active: true
       };
 
@@ -256,6 +261,95 @@ export function LandingPageManager() {
     fileInputRef.current?.click();
   };
 
+  const handleCarouselUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || !user) return;
+
+    // Vérifier qu'on ne dépasse pas 3 images
+    if (carouselImages.length + files.length > 3) {
+      toast({
+        title: "Limite atteinte",
+        description: "Vous ne pouvez uploader que 3 images maximum pour le carousel.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setUploadingCarousel(true);
+      const uploadedUrls: string[] = [];
+
+      for (const file of Array.from(files)) {
+        // Vérifier la taille
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            title: "Fichier trop volumineux",
+            description: `${file.name} dépasse 5MB.`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        // Vérifier le type
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Format non supporté",
+            description: `${file.name} n'est pas une image.`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        // Upload
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/carousel-${Date.now()}-${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-photos')
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      if (uploadedUrls.length > 0) {
+        setCarouselImages(prev => [...prev, ...uploadedUrls]);
+        toast({
+          title: "Images uploadées",
+          description: `${uploadedUrls.length} image(s) ajoutée(s) au carousel.`
+        });
+      }
+
+    } catch (error) {
+      console.error('Error uploading carousel images:', error);
+      toast({
+        title: "Erreur d'upload",
+        description: "Impossible d'uploader les images.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingCarousel(false);
+      if (carouselInputRef.current) {
+        carouselInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeCarouselImage = (index: number) => {
+    setCarouselImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -348,6 +442,76 @@ export function LandingPageManager() {
               )}
             </CardContent>
           </Card>
+
+          {layoutType === 'glassmorphism' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Images du carousel (arrière-plan)</CardTitle>
+                <CardDescription>
+                  Ajoutez jusqu'à 3 images qui défileront en arrière-plan avec effet de flou
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  {carouselImages.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <img 
+                        src={image} 
+                        alt={`Carousel ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      {isEditing && (
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeCarouselImage(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {carouselImages.length < 3 && isEditing && (
+                    <button
+                      onClick={() => carouselInputRef.current?.click()}
+                      disabled={uploadingCarousel}
+                      className="h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-accent/50 transition-colors"
+                    >
+                      {uploadingCarousel ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            Ajouter une image
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={carouselInputRef}
+                  onChange={handleCarouselUpload}
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                />
+
+                {isEditing && (
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <p className="text-xs text-muted-foreground">
+                      💡 Formats acceptés: JPG, PNG, GIF • Taille max: 5MB par image • {3 - carouselImages.length} image(s) restante(s)
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="personal" className="space-y-6">

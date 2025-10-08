@@ -23,6 +23,7 @@ interface GlassmorphismLandingProps {
       adresse: string;
     };
     presentation: string;
+    carouselImages?: string[];
   };
   theme: string;
   toggleTheme: () => void;
@@ -35,18 +36,35 @@ export function GlassmorphismLanding({
   toggleTheme,
   isAuthenticated,
 }: GlassmorphismLandingProps) {
+  const backgroundImages = data.carouselImages && data.carouselImages.length > 0 
+    ? data.carouselImages 
+    : [data.photo, data.photo, data.photo];
+
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background avec image du prof en flou */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(${data.photo})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'blur(20px) brightness(0.7)',
-        }}
-      />
+      {/* Background carousel */}
+      <div className="fixed inset-0 z-0">
+        <Carousel 
+          opts={{ loop: true }}
+          className="h-full w-full"
+        >
+          <CarouselContent className="h-full">
+            {backgroundImages.map((image, index) => (
+              <CarouselItem key={index} className="h-screen">
+                <div 
+                  className="h-full w-full"
+                  style={{
+                    backgroundImage: `url(${image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'blur(20px) brightness(0.7)',
+                  }}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
       
       {/* Overlay gradient */}
       <div className="fixed inset-0 z-0 bg-gradient-to-br from-background/90 via-background/80 to-primary/20" />
