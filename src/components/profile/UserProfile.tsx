@@ -17,7 +17,7 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ onClose }: UserProfileProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
@@ -106,14 +106,14 @@ export function UserProfile({ onClose }: UserProfileProps) {
 
       if (error) throw error;
 
+      // Rafraîchir le profil dans le contexte
+      await refreshProfile();
+      
       toast({
         title: "Profil mis à jour",
         description: "Vos informations ont été sauvegardées avec succès.",
       });
       setIsEditing(false);
-      
-      // Rafraîchir le contexte auth pour afficher les nouvelles données
-      window.location.reload();
     } catch (error) {
       console.error('Save profile error:', error);
       toast({
