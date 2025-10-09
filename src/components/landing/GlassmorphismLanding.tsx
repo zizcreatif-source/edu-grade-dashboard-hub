@@ -111,41 +111,42 @@ export function GlassmorphismLanding({
         <div className="container mx-auto max-w-6xl space-y-8">
           {/* Hero Card */}
           <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row gap-8 items-center">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/50 shadow-2xl flex-shrink-0">
-                  <img
-                    src={data.photo}
-                    alt={data.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            <CardContent className="p-8 md:p-12">
+              <div className="max-w-3xl space-y-6">
+                <Badge className="w-fit bg-white/20 backdrop-blur-sm text-white border border-white/30 text-sm">
+                  {data.experience}
+                </Badge>
                 
-                <div className="flex-1 text-center md:text-left space-y-3">
-                  <Badge className="w-fit bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                    {data.experience}
-                  </Badge>
-                  
-                  <h1 className="text-4xl lg:text-6xl font-bold text-white drop-shadow-lg">
-                    {data.name}
-                  </h1>
-                  
-                  <p className="text-xl text-white/90 font-medium">
-                    {data.title}
-                  </p>
-                  
-                  <p className="text-lg text-white/80">
-                    {data.etablissement}
-                  </p>
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white drop-shadow-lg leading-tight">
+                  {data.name}
+                </h1>
+                
+                <p className="text-2xl md:text-3xl text-white/90 font-medium">
+                  {data.title}
+                </p>
+                
+                <p className="text-lg md:text-xl text-white/80 leading-relaxed">
+                  {data.presentation}
+                </p>
+
+                <div className="flex flex-wrap gap-3 pt-2">
+                  {data.specialites.map((spec, index) => (
+                    <Badge 
+                      key={index} 
+                      className="text-base px-4 py-2 backdrop-blur-sm bg-white/20 border border-white/30 text-white"
+                    >
+                      {spec}
+                    </Badge>
+                  ))}
                 </div>
 
                 <Button 
                   size="lg" 
-                  className="bg-white/30 hover:bg-white/40 backdrop-blur-md text-white border border-white/40 shadow-xl hover:shadow-2xl transition-all flex-shrink-0" 
+                  className="bg-white/30 hover:bg-white/40 backdrop-blur-md text-white border border-white/40 shadow-xl hover:shadow-2xl transition-all mt-4" 
                   asChild
                 >
                   <a href={`mailto:${data.contact.email}`}>
-                    <Mail className="mr-2 h-4 w-4" />
+                    <Mail className="mr-2 h-5 w-5" />
                     Me contacter
                   </a>
                 </Button>
@@ -153,41 +154,18 @@ export function GlassmorphismLanding({
             </CardContent>
           </Card>
 
-          {/* About and Specialties */}
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
-              <CardContent className="p-8">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <GraduationCap className="h-8 w-8 text-white" />
-                    <h2 className="text-3xl font-bold text-white">À propos</h2>
-                  </div>
-                  
-                  <p className="text-lg text-white/90 leading-relaxed">
-                    {data.presentation}
-                  </p>
+          {/* Additional Info Card */}
+          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
+            <CardContent className="p-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                  <h3 className="text-xl font-semibold text-white">Établissement</h3>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
-              <CardContent className="p-8">
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-semibold text-white">Spécialités</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {data.specialites.map((spec, index) => (
-                      <Badge 
-                        key={index} 
-                        className="text-base px-5 py-2 backdrop-blur-sm bg-white/20 border border-white/30 text-white"
-                      >
-                        {spec}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                <p className="text-lg text-white/90">{data.etablissement}</p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Contact Card */}
           <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
