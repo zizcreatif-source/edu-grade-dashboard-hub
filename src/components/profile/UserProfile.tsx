@@ -100,6 +100,7 @@ export function UserProfile({ onClose }: UserProfileProps) {
         .update({
           display_name: formData.display_name,
           avatar_url: formData.avatar_url,
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id);
 
@@ -110,7 +111,11 @@ export function UserProfile({ onClose }: UserProfileProps) {
         description: "Vos informations ont été sauvegardées avec succès.",
       });
       setIsEditing(false);
+      
+      // Rafraîchir le contexte auth pour afficher les nouvelles données
+      window.location.reload();
     } catch (error) {
+      console.error('Save profile error:', error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le profil.",
@@ -178,7 +183,11 @@ export function UserProfile({ onClose }: UserProfileProps) {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="relative">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={formData.avatar_url || profile?.avatar_url} alt={formData.display_name} />
+                <AvatarImage 
+                  src={formData.avatar_url || profile?.avatar_url} 
+                  alt={formData.display_name}
+                  className="object-cover"
+                />
                 <AvatarFallback className="bg-gradient-to-br from-primary to-primary-glow text-primary-foreground text-lg">
                   {formData.display_name?.split(' ').map(n => n[0]).join('').toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
