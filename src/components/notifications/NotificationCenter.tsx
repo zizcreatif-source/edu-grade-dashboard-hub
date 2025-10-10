@@ -77,19 +77,19 @@ export function NotificationCenter() {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 sm:w-96" align="end">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Notifications</CardTitle>
-                <div className="flex items-center gap-2">
+        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 max-w-md z-50" align="end" side="bottom">
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="pb-3 px-3 sm:px-6">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-base sm:text-lg truncate">Notifications</CardTitle>
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <Dialog open={showSettings} onOpenChange={setShowSettings}>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <Settings className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Paramètres de notification</DialogTitle>
                       </DialogHeader>
@@ -98,7 +98,7 @@ export function NotificationCenter() {
                   </Dialog>
                   
                   {unreadCount > 0 && (
-                    <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+                    <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-8 w-8 p-0" title="Tout marquer comme lu">
                       <Check className="h-4 w-4" />
                     </Button>
                   )}
@@ -106,7 +106,7 @@ export function NotificationCenter() {
               </div>
               
               {unreadCount > 0 && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground pt-1">
                   <span>{unreadCount} nouvelle{unreadCount > 1 ? 's' : ''} notification{unreadCount > 1 ? 's' : ''}</span>
                 </div>
               )}
@@ -115,45 +115,45 @@ export function NotificationCenter() {
             <CardContent className="p-0">
               {notifications.length > 0 ? (
                 <>
-                  <ScrollArea className="h-96">
-                    <div className="space-y-1 p-4">
+                  <ScrollArea className="h-[60vh] sm:h-96">
+                    <div className="space-y-1 p-3 sm:p-4">
                       {notifications.map((notification, index) => (
                         <div key={notification.id}>
                           <div 
-                            className={`p-3 rounded-lg border transition-colors ${
+                            className={`p-2.5 sm:p-3 rounded-lg border transition-colors ${
                               notification.read 
                                 ? 'bg-muted/20 border-muted' 
                                 : 'bg-background border-border shadow-sm'
                             }`}
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="mt-0.5">
+                            <div className="flex items-start gap-2 sm:gap-3">
+                              <div className="mt-0.5 flex-shrink-0">
                                 {getNotificationIcon(notification.type)}
                               </div>
                               
-                              <div className="flex-1 space-y-2">
+                              <div className="flex-1 space-y-2 min-w-0">
                                 <div className="flex items-start justify-between gap-2">
-                                  <h4 className={`text-sm font-medium ${notification.read ? 'text-muted-foreground' : ''}`}>
+                                  <h4 className={`text-xs sm:text-sm font-medium break-words ${notification.read ? 'text-muted-foreground' : ''}`}>
                                     {notification.title}
                                   </h4>
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-auto p-1"
+                                    className="h-6 w-6 p-0 flex-shrink-0"
                                     onClick={() => deleteNotification(notification.id)}
                                   >
                                     <X className="h-3 w-3" />
                                   </Button>
                                 </div>
                                 
-                                <p className={`text-sm ${notification.read ? 'text-muted-foreground' : 'text-foreground'}`}>
+                                <p className={`text-xs sm:text-sm break-words ${notification.read ? 'text-muted-foreground' : 'text-foreground'}`}>
                                   {notification.message}
                                 </p>
                                 
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                  <div className="flex flex-wrap items-center gap-2">
                                     {getCategoryBadge(notification.category)}
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                                       {formatTime(notification.timestamp)}
                                     </span>
                                   </div>
@@ -162,7 +162,7 @@ export function NotificationCenter() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-auto p-1 text-xs"
+                                      className="h-auto p-1 text-xs whitespace-nowrap"
                                       onClick={() => markAsRead(notification.id)}
                                     >
                                       Marquer comme lu
@@ -171,13 +171,14 @@ export function NotificationCenter() {
                                 </div>
                                 
                                 {notification.actions && (
-                                  <div className="flex gap-2 pt-2">
+                                  <div className="flex flex-wrap gap-2 pt-2">
                                     {notification.actions.map((action, actionIndex) => (
                                       <Button
                                         key={actionIndex}
                                         variant="outline"
                                         size="sm"
                                         onClick={action.action}
+                                        className="text-xs"
                                       >
                                         {action.label}
                                       </Button>
@@ -194,11 +195,11 @@ export function NotificationCenter() {
                     </div>
                   </ScrollArea>
                   
-                  <div className="p-4 border-t">
+                  <div className="p-3 sm:p-4 border-t">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full"
+                      className="w-full text-xs sm:text-sm"
                       onClick={clearAll}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -207,10 +208,10 @@ export function NotificationCenter() {
                   </div>
                 </>
               ) : (
-                <div className="p-8 text-center">
-                  <BellOff className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Aucune notification</h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className="p-6 sm:p-8 text-center">
+                  <BellOff className="h-10 sm:h-12 w-10 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">Aucune notification</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Vous êtes à jour ! Les nouvelles notifications apparaîtront ici.
                   </p>
                 </div>

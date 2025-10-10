@@ -85,33 +85,36 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
-      <SidebarHeader className="border-b border-border/40 p-4">
+    <Sidebar 
+      className={`${collapsed ? "w-16" : "w-64"} transition-all duration-300`} 
+      collapsible="icon"
+    >
+      <SidebarHeader className="border-b border-border/40 p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow">
               <GraduationCap className="h-5 w-5 text-primary-foreground" />
             </div>
             {!collapsed && (
-              <div>
-                <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent truncate">
                   EduGrade
                 </h1>
-                <p className="text-xs text-muted-foreground">Gestion des notes</p>
+                <p className="text-xs text-muted-foreground truncate">Gestion des notes</p>
               </div>
             )}
           </div>
           {!collapsed && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <SyncStatus />
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4">
+      <SidebarContent className="p-2 sm:p-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-2">
             {!collapsed ? "Navigation" : ""}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -125,11 +128,11 @@ export function AppSidebar() {
                       className={getNavClasses(item.url)}
                       title={collapsed ? item.title : undefined}
                     >
-                      <item.icon className={`${collapsed ? "h-5 w-5" : "h-4 w-4"} shrink-0`} />
+                      <item.icon className={`${collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4"} shrink-0`} />
                       {!collapsed && (
-                        <div className="flex-1">
-                          <div className="font-medium">{item.title}</div>
-                          <div className="text-xs opacity-70">{item.description}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate text-sm">{item.title}</div>
+                          <div className="text-xs opacity-70 truncate hidden sm:block">{item.description}</div>
                         </div>
                       )}
                     </NavLink>

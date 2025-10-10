@@ -107,33 +107,33 @@ export function GlassmorphismLanding({
       </header>
 
       {/* Main Content */}
-      <section className="relative z-10 py-12 px-4">
-        <div className="container mx-auto max-w-6xl space-y-8">
+      <section className="relative z-10 py-6 sm:py-12 px-4">
+        <div className="container mx-auto max-w-6xl space-y-6 sm:space-y-8">
           {/* Hero Card */}
-          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
-            <CardContent className="p-8 md:p-12">
-              <div className="max-w-3xl space-y-6">
-                <Badge className="w-fit bg-white/20 backdrop-blur-sm text-white border border-white/30 text-sm">
+          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl overflow-hidden">
+            <CardContent className="p-6 sm:p-8 md:p-12">
+              <div className="max-w-3xl space-y-4 sm:space-y-6">
+                <Badge className="w-fit bg-white/20 backdrop-blur-sm text-white border border-white/30 text-xs sm:text-sm px-3 py-1">
                   {data.experience}
                 </Badge>
                 
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white drop-shadow-lg leading-tight">
+                <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white drop-shadow-lg leading-tight break-words">
                   {data.name}
                 </h1>
                 
-                <p className="text-2xl md:text-3xl text-white/90 font-medium">
+                <p className="text-xl sm:text-2xl md:text-3xl text-white/90 font-medium">
                   {data.title}
                 </p>
                 
-                <p className="text-lg md:text-xl text-white/80 leading-relaxed">
+                <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed">
                   {data.presentation}
                 </p>
 
-                <div className="flex flex-wrap gap-3 pt-2">
+                <div className="flex flex-wrap gap-2 sm:gap-3 pt-2">
                   {data.specialites.map((spec, index) => (
                     <Badge 
                       key={index} 
-                      className="text-base px-4 py-2 backdrop-blur-sm bg-white/20 border border-white/30 text-white"
+                      className="text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm bg-white/20 border border-white/30 text-white"
                     >
                       {spec}
                     </Badge>
@@ -142,11 +142,11 @@ export function GlassmorphismLanding({
 
                 <Button 
                   size="lg" 
-                  className="bg-white/30 hover:bg-white/40 backdrop-blur-md text-white border border-white/40 shadow-xl hover:shadow-2xl transition-all mt-4" 
+                  className="w-full sm:w-auto bg-white/30 hover:bg-white/40 backdrop-blur-md text-white border border-white/40 shadow-xl hover:shadow-2xl transition-all mt-4" 
                   asChild
                 >
                   <a href={`mailto:${data.contact.email}`}>
-                    <Mail className="mr-2 h-5 w-5" />
+                    <Mail className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
                     Me contacter
                   </a>
                 </Button>
@@ -155,43 +155,46 @@ export function GlassmorphismLanding({
           </Card>
 
           {/* Additional Info Card */}
-          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
-            <CardContent className="p-8">
-              <div className="space-y-4">
+          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl overflow-hidden">
+            <CardContent className="p-6 sm:p-8">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-3">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                  <h3 className="text-xl font-semibold text-white">Établissement</h3>
+                  <GraduationCap className="h-5 sm:h-6 w-5 sm:w-6 text-white flex-shrink-0" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-white">Établissement</h3>
                 </div>
-                <p className="text-lg text-white/90">{data.etablissement}</p>
+                <p className="text-base sm:text-lg text-white/90 break-words">{data.etablissement}</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Contact Card */}
-          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl">
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-8 w-8 text-white" />
-                  <h2 className="text-3xl font-bold text-white">Contact</h2>
+          <Card className="backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 shadow-2xl overflow-hidden">
+            <CardContent className="p-6 sm:p-8">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 justify-center sm:justify-start">
+                  <Mail className="h-6 sm:h-8 w-6 sm:w-8 text-white flex-shrink-0" />
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">Contact</h2>
                 </div>
                 
-                <div className="flex flex-col md:flex-row gap-6 text-center md:text-left">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-5 w-5 text-white/90" />
-                    <a href={`mailto:${data.contact.email}`} className="text-lg text-white hover:text-white/80 transition-colors">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 p-3 rounded-lg bg-white/5">
+                    <Mail className="h-4 sm:h-5 w-4 sm:w-5 text-white/90 flex-shrink-0" />
+                    <a 
+                      href={`mailto:${data.contact.email}`} 
+                      className="text-sm sm:text-base text-white hover:text-white/80 transition-colors break-all"
+                    >
                       {data.contact.email}
                     </a>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-white/90" />
-                    <span className="text-lg text-white">{data.contact.telephone}</span>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 p-3 rounded-lg bg-white/5">
+                    <Phone className="h-4 sm:h-5 w-4 sm:w-5 text-white/90 flex-shrink-0" />
+                    <span className="text-sm sm:text-base text-white">{data.contact.telephone}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-white/90" />
-                    <span className="text-lg text-white">{data.contact.adresse}</span>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 p-3 rounded-lg bg-white/5">
+                    <MapPin className="h-4 sm:h-5 w-4 sm:w-5 text-white/90 flex-shrink-0" />
+                    <span className="text-sm sm:text-base text-white">{data.contact.adresse}</span>
                   </div>
                 </div>
               </div>
