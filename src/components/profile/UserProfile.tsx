@@ -95,16 +95,44 @@ export function UserProfile({ onClose }: UserProfileProps) {
     
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Mettre à jour le profil
+      const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: user.id,
           display_name: formData.display_name,
           avatar_url: formData.avatar_url,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
+        }, {
+          onConflict: 'user_id'
+        });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Mettre à jour aussi la landing page pour synchroniser
+      const { data: landingData } = await supabase
+        .from('landing_pages')
+        .select('personal_info')
+        .eq('user_id', user.id)
+        .single();
+
+      if (landingData) {
+        const updatedPersonalInfo = {
+          ...(landingData.personal_info as any),
+          name: formData.display_name,
+          photo: formData.avatar_url,
+        };
+
+        const { error: landingError } = await supabase
+          .from('landing_pages')
+          .update({
+            personal_info: updatedPersonalInfo,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
+
+        if (landingError) throw landingError;
+      }
 
       // Rafraîchir le profil dans le contexte
       await refreshProfile();
